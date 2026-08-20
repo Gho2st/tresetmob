@@ -21,16 +21,16 @@ export default function Nav() {
           <Search size={20} strokeWidth={1.5} />
         </button>
 
-        <Link href="/account" aria-label="Account">
+        <Link href="/logowanie" aria-label="login">
           <User size={20} strokeWidth={1.5} />
         </Link>
 
-        <Link href="/cart" aria-label="Cart" className="relative">
+        <Link href="/koszyk" aria-label="koszyk" className="relative">
           <ShoppingBag size={20} strokeWidth={1.5} />
           {/* opcjonalnie badge z ilością */}
-          {/* <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
             2
-          </span> */}
+          </span>
         </Link>
       </div>
     </nav>
