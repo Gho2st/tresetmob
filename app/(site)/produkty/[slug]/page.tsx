@@ -1,9 +1,9 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProduct, getProducts } from "@/lib/products";
 import PriceTag from "@/components/PriceTag";
 import AddToCart from "@/components/AddToCart";
+import Gallery from "@/components/product/Gallery";
 
 export const revalidate = 3600;
 
@@ -35,20 +35,7 @@ export default async function ProductPage({ params }: Params) {
 
   return (
     <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-2">
-      <div className="flex flex-col gap-2">
-        {product.images.map((src, i) => (
-          <div key={src} className="relative aspect-3/4 w-full bg-neutral-100">
-            <Image
-              src={src}
-              alt={i === 0 ? product.title : ""}
-              fill
-              priority={i === 0}
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-contain"
-            />
-          </div>
-        ))}
-      </div>
+      <Gallery images={product.images} title={product.title} />
 
       <div className="md:sticky md:top-8 md:h-fit md:pt-8">
         {" "}

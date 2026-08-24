@@ -12,7 +12,7 @@ export default function SiteLayout({
     <SessionProvider>
       <CartProvider>
         <Nav />
-        {children}
+        <main className="flex-1">{children}</main>
         <Footer />
       </CartProvider>
     </SessionProvider>

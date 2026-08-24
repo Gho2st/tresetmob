@@ -5,7 +5,7 @@ export default async function Wanted() {
   const products = await getProducts();
 
   return (
-    <div className="px-4 py-32">
+    <div className="mx-auto w-full max-w-[1600px] px-4 py-32 sm:px-12 lg:px-20">
       <ProductGrid products={products} />
     </div>
   );

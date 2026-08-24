@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import type { Product } from "@/lib/products";
+import SizeChart from "@/components/product/SizeChart";
 
 export default function AddToCart({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -28,7 +29,10 @@ export default function AddToCart({ product }: { product: Product }) {
   return (
     <>
       <div className="mt-8">
-        <span className="text-xs tracking-wide uppercase">Rozmiar</span>
+        <div className="flex items-center justify-between">
+          <span className="text-xs tracking-wide uppercase">Rozmiar</span>
+          <SizeChart />
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {product.variants.map((v) => (
             <button

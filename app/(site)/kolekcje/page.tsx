@@ -13,7 +13,7 @@ export default async function Kolekcje({ searchParams }: Props) {
     : products;
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-16 text-black sm:px-12 lg:px-20 lg:py-20">
+    <section className="mx-auto w-full max-w-[1600px] px-6 py-16 text-black sm:px-12 lg:px-20 lg:py-20">
       <div className="mb-12 flex flex-col gap-3">
         <span className="text-xs tracking-[0.3em] text-black/40">
           KOLEKCJE
