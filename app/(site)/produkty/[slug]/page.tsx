@@ -1,17 +1,22 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getProduct, products } from "@/lib/products";
+import { getProduct, getProducts } from "@/lib/products";
+import PriceTag from "@/components/PriceTag";
+import AddToCart from "@/components/AddToCart";
+
+export const revalidate = 3600;
 
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
 
   if (!product) return { title: "Nie znaleziono produktu" };
 
@@ -24,7 +29,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Params) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
 
   if (!product) notFound();
 
@@ -50,26 +55,15 @@ export default async function ProductPage({ params }: Params) {
         <h1 className="text-sm font-semibold tracking-wide uppercase">
           {product.title}
         </h1>
-        <span className="mt-3 block text-sm">{product.price}</span>
+        <PriceTag
+          priceCents={product.priceCents}
+          salePriceCents={product.salePriceCents}
+          className="mt-3 block text-sm"
+        />
         <p className="mt-8 text-sm leading-relaxed text-neutral-600">
           {product.description}
         </p>
-        <div className="mt-8">
-          <span className="text-xs tracking-wide uppercase">Rozmiar</span>
-          <div className="mt-3 flex gap-2">
-            {product.sizes.map((size) => (
-              <button
-                key={size}
-                className="border border-neutral-300 px-4 py-2 text-sm hover:border-black"
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-        <button className="mt-8 w-full bg-black py-4 text-sm tracking-wide text-white uppercase hover:bg-neutral-800">
-          Dodaj do koszyka
-        </button>
+        <AddToCart product={product} />
       </div>
     </main>
   );

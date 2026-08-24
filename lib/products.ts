@@ -1,27 +1,23 @@
-export type Product = {
-  slug: string;
-  title: string;
-  price: string;
-  images: string[]; // [0] główne, [1] hover, reszta do galerii
-  description: string;
-  sizes: string[];
-};
+import "server-only";
+import { prisma } from "@/lib/prisma";
+import type {
+  Product as PrismaProduct,
+  ProductVariant,
+} from "@/lib/generated/prisma/client";
 
-export const products: Product[] = [
-  {
-    slug: "straight-jeans-all-black-denim",
-    title: "STRAIGHT JEANS - ALL BLACK DENIM",
-    price: "359,00 zł",
-    images: [
-      "/items/jeans.png",
-      "/items/jeans2.webp",
-    ],
-    description:
-      "Proste jeansy z bawełny w kolorze głębokiej czerni. Średni stan, klasyczny krój.",
-    sizes: ["28", "30", "32", "34"],
-  },
-];
+export type { ProductVariant };
+export type Product = PrismaProduct & { variants: ProductVariant[] };
+
+export function getProducts() {
+  return prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { variants: true },
+  });
+}
 
 export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
+  return prisma.product.findUnique({
+    where: { slug },
+    include: { variants: true },
+  });
 }

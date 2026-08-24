@@ -1,10 +1,29 @@
 import Image from "next/image";
 import Link from "next/link";
+import { heroMedia } from "@/lib/hero";
 
 export default function Hero() {
   return (
     <div className="w-full h-screen relative">
-      <Image src="/hero.png" alt="" fill priority className="object-cover" />
+      {heroMedia.type === "video" ? (
+        <video
+          src={heroMedia.src}
+          poster={heroMedia.poster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <Image
+          src={heroMedia.src}
+          alt={heroMedia.alt ?? ""}
+          fill
+          priority
+          className="object-cover"
+        />
+      )}
 
       <div className="absolute inset-0 z-10 flex items-center justify-center">
         <Link

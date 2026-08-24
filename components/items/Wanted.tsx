@@ -1,20 +1,12 @@
-import Item from "./Item";
-import { products } from "@/lib/products";
+import ProductGrid from "./ProductGrid";
+import { getProducts } from "@/lib/products";
 
-export default function Wanted() {
+export default async function Wanted() {
+  const products = await getProducts();
+
   return (
-    <div className="flex justify-center">
-      <div className="grid md:grid-cols-2 gap-6 px-4 py-10 xl:grid-cols-4">
-        {products.map((product) => (
-          <Item
-            key={product.slug}
-            href={`/produkty/${product.slug}`}
-            images={product.images}
-            title={product.title}
-            price={product.price}
-          />
-        ))}
-      </div>
+    <div className="px-4 py-32">
+      <ProductGrid products={products} />
     </div>
   );
 }
