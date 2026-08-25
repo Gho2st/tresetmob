@@ -20,6 +20,7 @@ model Product {
   salePriceCents Int?
   description    String
   images         String[]
+  sortOrder      Int              @default(0)
   variants       ProductVariant[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -33,6 +34,15 @@ model ProductVariant {
   productId String
 
   @@unique([productId, size])
+}
+
+// Jeden wiersz (id zawsze "singleton") — ustawienia baneru Hero na stronie głównej.
+model Hero {
+  id     String  @id @default("singleton")
+  type   String // "image" | "video"
+  src    String
+  alt    String?
+  poster String?
 }
 
 model Order {

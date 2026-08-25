@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import PriceTag from "@/components/PriceTag";
-import { deleteProduct } from "./actions";
+import { deleteProduct, moveProduct } from "./actions";
 
 export default async function AdminProdukty() {
   const products = await getProducts();
@@ -27,12 +28,45 @@ export default async function AdminProdukty() {
         </p>
       ) : (
         <ul className="flex flex-col divide-y divide-black/10 border-y border-black/10">
-          {products.map((product) => {
+          {products.map((product, index) => {
             const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
             const outOfStock = product.variants.filter((v) => v.stock === 0).length;
 
             return (
             <li key={product.id} className="flex items-center gap-5 py-4">
+              <div className="flex shrink-0 flex-col">
+                <form
+                  action={async () => {
+                    "use server";
+                    await moveProduct(product.id, "up");
+                  }}
+                >
+                  <button
+                    type="submit"
+                    disabled={index === 0}
+                    aria-label="Przesuń wyżej"
+                    className="text-black/50 hover:text-black disabled:cursor-not-allowed disabled:text-black/15"
+                  >
+                    <ChevronUp size={16} strokeWidth={1.5} />
+                  </button>
+                </form>
+                <form
+                  action={async () => {
+                    "use server";
+                    await moveProduct(product.id, "down");
+                  }}
+                >
+                  <button
+                    type="submit"
+                    disabled={index === products.length - 1}
+                    aria-label="Przesuń niżej"
+                    className="text-black/50 hover:text-black disabled:cursor-not-allowed disabled:text-black/15"
+                  >
+                    <ChevronDown size={16} strokeWidth={1.5} />
+                  </button>
+                </form>
+              </div>
+
               <div className="relative aspect-square w-14 shrink-0 overflow-hidden bg-neutral-100">
                 {product.images[0] && (
                   <Image

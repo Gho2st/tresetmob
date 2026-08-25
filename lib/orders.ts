@@ -8,3 +8,10 @@ export function getOrdersForEmail(email: string) {
     orderBy: { createdAt: "desc" },
   });
 }
+
+export function getAllOrders() {
+  return prisma.order.findMany({
+    include: { items: true },
+    orderBy: { createdAt: "desc" },
+  });
+}

@@ -38,8 +38,7 @@ export default function Footer() {
             Tresetmob
           </Link>
           <p className="max-w-2xs text-sm leading-relaxed text-white/50">
-            Świeże kadry, kulisy i info o tym, co dalej — wszystko ląduje na
-            Instagramie pierwsze.
+            made in poland
           </p>
           <a
             href={IG_URL}

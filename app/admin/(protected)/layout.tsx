@@ -20,6 +20,12 @@ export default async function AdminLayout({
             <Link href="/admin/produkty" className="text-black/70 hover:text-black">
               Produkty
             </Link>
+            <Link href="/admin/zamowienia" className="text-black/70 hover:text-black">
+              Zamówienia
+            </Link>
+            <Link href="/admin/hero" className="text-black/70 hover:text-black">
+              Hero
+            </Link>
           </nav>
         </div>
 

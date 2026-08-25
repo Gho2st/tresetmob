@@ -10,7 +10,7 @@ export type Product = PrismaProduct & { variants: ProductVariant[] };
 
 export function getProducts() {
   return prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     include: { variants: true },
   });
 }

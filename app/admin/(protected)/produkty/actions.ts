@@ -91,3 +91,26 @@ export async function deleteProduct(id: string) {
   const product = await prisma.product.delete({ where: { id } });
   revalidateCatalog(product.slug);
 }
+
+export async function moveProduct(id: string, direction: "up" | "down") {
+  await requireAdmin();
+
+  const products = await prisma.product.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    select: { id: true },
+  });
+  const index = products.findIndex((p) => p.id === id);
+  const swapWith = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || swapWith < 0 || swapWith >= products.length) return;
+
+  [products[index], products[swapWith]] = [products[swapWith], products[index]];
+
+  // Renumeracja całej listy wg nowej kolejności — prościej i odporniejsze na
+  // niejednoznaczności (np. remisy sortOrder) niż zamiana tylko dwóch wartości.
+  await prisma.$transaction(
+    products.map((p, i) =>
+      prisma.product.update({ where: { id: p.id }, data: { sortOrder: i } }),
+    ),
+  );
+  revalidateCatalog();
+}

@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { heroMedia } from "@/lib/hero";
+import { getHeroMedia } from "@/lib/hero";
 
-export default function Hero() {
+export default async function Hero() {
+  const heroMedia = await getHeroMedia();
+
   return (
     <div className="w-full h-screen relative">
       {heroMedia.type === "video" ? (
