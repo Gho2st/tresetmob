@@ -24,6 +24,8 @@ export async function updateHero(formData: FormData) {
     create: { id: "singleton", type, src, alt: alt || null },
   });
 
-  revalidatePath("/");
+  // "/" jako sam literal path czasem nie odświeża cache'u ISR na Vercelu przy
+  // wizytach spoza sesji, która wywołała akcję — "layout" wymusza pełną inwalidację.
+  revalidatePath("/", "layout");
   revalidatePath("/admin/hero");
 }

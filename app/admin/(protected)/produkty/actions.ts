@@ -52,7 +52,9 @@ function readProductFields(formData: FormData) {
 }
 
 function revalidateCatalog(slug?: string) {
-  revalidatePath("/");
+  // "/" jako sam literal path czasem nie odświeża cache'u ISR na Vercelu przy
+  // wizytach spoza sesji, która wywołała akcję — "layout" wymusza pełną inwalidację.
+  revalidatePath("/", "layout");
   revalidatePath("/kolekcje");
   revalidatePath("/admin/produkty");
   if (slug) revalidatePath(`/produkty/${slug}`);
