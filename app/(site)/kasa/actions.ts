@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { CartItem } from "@/lib/cart";
+import { sendOrderConfirmationEmail } from "@/lib/mail";
 
 type CreateOrderInput = {
   email: string;
@@ -64,7 +65,10 @@ export async function createOrder(input: CreateOrderInput) {
         })),
       },
     },
+    include: { items: true },
   });
+
+  await sendOrderConfirmationEmail(order);
 
   return { number: order.number };
 }

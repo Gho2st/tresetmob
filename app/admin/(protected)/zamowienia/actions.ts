@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { ORDER_STATUSES } from "@/lib/order-status";
+import { sendOrderStatusEmail } from "@/lib/mail";
 
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin();
@@ -11,7 +12,13 @@ export async function updateOrderStatus(id: string, status: string) {
     throw new Error("Nieznany status.");
   }
 
-  await prisma.order.update({ where: { id }, data: { status } });
+  const order = await prisma.order.update({
+    where: { id },
+    data: { status },
+    include: { items: true },
+  });
   revalidatePath("/admin/zamowienia");
   revalidatePath("/konto/zamowienia");
+
+  await sendOrderStatusEmail(order);
 }
