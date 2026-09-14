@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,7 +13,6 @@ import AccountPreview from "@/components/AccountPreview";
 
 const LINKS = [{ label: "Sklep", href: "/sklep" }];
 
-// 40px pole dotyku zamiast gołej ikony 20px
 const iconBtn =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-black " +
   "transition-colors active:bg-black/5 focus-visible:outline-none " +
@@ -30,6 +29,7 @@ export default function Nav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -49,15 +49,17 @@ export default function Nav() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen, searchOpen]);
 
-  // blokada przewijania tła przy otwartym menu
   useEffect(() => {
     if (!menuOpen) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // trasy z menu pobierane z wyprzedzeniem, zanim ktokolwiek kliknie
+    LINKS.forEach((link) => router.prefetch(link.href));
+    router.prefetch("/koszyk");
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [menuOpen]);
+  }, [menuOpen, router]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -65,6 +67,11 @@ export default function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const closeAll = () => {
+    setMenuOpen(false);
+    setSearchOpen(false);
+  };
 
   const toggleMenu = () => {
     setSearchOpen(false);
@@ -76,12 +83,24 @@ export default function Nav() {
     setSearchOpen((v) => !v);
   };
 
+  // panel zamyka się od razu po dotknięciu, nie po załadowaniu trasy
+  const navigate =
+    (href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+        return;
+      }
+      e.preventDefault();
+      closeAll();
+      startTransition(() => router.push(href));
+    };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/sklep?q=${encodeURIComponent(q)}` : "/sklep");
-    setSearchOpen(false);
+    const href = q ? `/sklep?q=${encodeURIComponent(q)}` : "/sklep";
+    closeAll();
     setQuery("");
+    startTransition(() => router.push(href));
   };
 
   const badge = count > 9 ? "9+" : count;
@@ -91,6 +110,7 @@ export default function Nav() {
       className={`sticky top-0 z-50 bg-white transition-shadow duration-200 ${
         scrolled ? "shadow-[0_1px_12px_rgba(0,0,0,0.07)]" : ""
       }`}
+      aria-busy={isPending}
     >
       <nav className="relative flex h-14 w-full items-center justify-between border-b border-black/10 px-2 text-black md:px-8">
         <div className="flex items-center gap-8">
@@ -109,9 +129,9 @@ export default function Nav() {
             )}
           </button>
 
-          {/* na mobile logo wyśrodkowane, od md wraca do lewej */}
           <Link
             href="/"
+            onClick={navigate("/")}
             aria-label="Strona główna"
             className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center md:static md:translate-x-0 md:translate-y-0"
           >
@@ -132,6 +152,7 @@ export default function Nav() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={navigate(link.href)}
                   className={`text-sm tracking-widest uppercase transition-colors ${
                     active ? "text-black" : "text-black/50 hover:text-black"
                   }`}
@@ -159,12 +180,12 @@ export default function Nav() {
             )}
           </button>
 
-          {/* podgląd konta tylko na desktopie – hover nie istnieje na dotyku */}
           <div className="hidden md:block">
             <HoverMenu
               trigger={
                 <Link
                   href={loggedIn ? "/konto" : "/logowanie"}
+                  onClick={navigate(loggedIn ? "/konto" : "/logowanie")}
                   aria-label={loggedIn ? "Moje konto" : "Logowanie"}
                   className={iconBtn}
                 >
@@ -178,6 +199,7 @@ export default function Nav() {
 
           <Link
             href="/koszyk"
+            onClick={navigate("/koszyk")}
             aria-label={`Koszyk${count > 0 ? `, produkty: ${count}` : ""}`}
             className={`${iconBtn} relative md:hidden`}
           >
@@ -194,6 +216,7 @@ export default function Nav() {
               trigger={
                 <Link
                   href="/koszyk"
+                  onClick={navigate("/koszyk")}
                   aria-label={`Koszyk${count > 0 ? `, produkty: ${count}` : ""}`}
                   className={`${iconBtn} relative`}
                 >
@@ -210,6 +233,15 @@ export default function Nav() {
             </HoverMenu>
           </div>
         </div>
+
+        {isPending && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 overflow-hidden"
+          >
+            <span className="block h-full w-1/3 animate-[nav-progress_1.1s_ease-in-out_infinite] bg-black" />
+          </span>
+        )}
       </nav>
 
       {searchOpen && (
@@ -233,7 +265,6 @@ export default function Nav() {
             enterKeyHint="search"
             autoComplete="off"
             autoCorrect="off"
-            /* text-base = 16px, inaczej iOS zoomuje stronę przy focusie */
             className="w-full bg-transparent text-base placeholder:text-black/40 focus:outline-none md:text-sm"
           />
           {query && (
@@ -255,7 +286,6 @@ export default function Nav() {
         </form>
       )}
 
-      {/* pełnoekranowy panel mobilny */}
       <div
         id="mobile-menu"
         className={`fixed inset-x-0 top-14 bottom-0 z-40 flex flex-col overflow-y-auto overscroll-contain bg-white transition-[opacity,transform] duration-200 md:hidden ${
@@ -272,7 +302,8 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`border-b border-black/5 py-4 text-base tracking-widest uppercase ${
+                onClick={navigate(link.href)}
+                className={`-mx-2 border-b border-black/5 px-2 py-4 text-base tracking-widest uppercase transition-colors active:bg-black/5 ${
                   active ? "text-black" : "text-black/70"
                 }`}
               >
@@ -285,14 +316,16 @@ export default function Nav() {
         <div className="mt-auto flex flex-col gap-1 px-4 pt-8 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <Link
             href={loggedIn ? "/konto" : "/logowanie"}
-            className="flex items-center gap-3 py-3 text-sm text-black/70"
+            onClick={navigate(loggedIn ? "/konto" : "/logowanie")}
+            className="-mx-2 flex items-center gap-3 rounded px-2 py-3 text-sm text-black/70 transition-colors active:bg-black/5"
           >
             <User size={18} strokeWidth={1.5} />
             {loggedIn ? "Moje konto" : "Zaloguj się"}
           </Link>
           <Link
             href="/koszyk"
-            className="flex items-center gap-3 py-3 text-sm text-black/70"
+            onClick={navigate("/koszyk")}
+            className="-mx-2 flex items-center gap-3 rounded px-2 py-3 text-sm text-black/70 transition-colors active:bg-black/5"
           >
             <ShoppingBag size={18} strokeWidth={1.5} />
             Koszyk{count > 0 ? ` (${count})` : ""}
