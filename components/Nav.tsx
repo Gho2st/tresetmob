@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
@@ -23,7 +24,6 @@ export default function Nav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  // zamknij menu/wyszukiwarkę przy zmianie strony — celowa reakcja na zmianę pathname
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false);
@@ -53,7 +53,6 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 bg-white">
       <nav className="flex h-14 w-full items-center justify-between border-b border-black/10 px-4 text-black md:px-8">
-        {/* Lewa strona - Menu (mobile) + Logo + linki (desktop) */}
         <div className="flex items-center gap-8">
           <button
             type="button"
@@ -69,8 +68,15 @@ export default function Nav() {
             )}
           </button>
 
-          <Link href="/" className="font-bebas text-2xl tracking-wider">
-            Tresetmob
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="Tresetmob"
+              width={140}
+              height={36}
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">
@@ -91,7 +97,6 @@ export default function Nav() {
           </div>
         </div>
 
-        {/* Prawa strona - ikonki */}
         <div className="flex items-center gap-5">
           <button
             type="button"
@@ -136,7 +141,6 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* pasek wyszukiwania */}
       {searchOpen && (
         <form
           onSubmit={handleSearch}
@@ -154,7 +158,6 @@ export default function Nav() {
         </form>
       )}
 
-      {/* menu mobilne */}
       {menuOpen && (
         <div className="flex flex-col border-b border-black/10 bg-white px-4 py-4 md:hidden">
           {LINKS.map((link) => (
