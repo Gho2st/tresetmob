@@ -4,8 +4,15 @@ import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import type { Product } from "@/lib/products";
 import SizeChart from "@/components/product/SizeChart";
+import type { SizeChartData } from "@/lib/size-charts";
 
-export default function AddToCart({ product }: { product: Product }) {
+export default function AddToCart({
+  product,
+  sizeChart,
+}: {
+  product: Product;
+  sizeChart: SizeChartData | null;
+}) {
   const { addItem } = useCart();
   const [size, setSize] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -31,7 +38,7 @@ export default function AddToCart({ product }: { product: Product }) {
       <div className="mt-8">
         <div className="flex items-center justify-between">
           <span className="text-xs tracking-wide uppercase">Rozmiar</span>
-          <SizeChart />
+          {sizeChart && <SizeChart chart={sizeChart} />}
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {product.variants.map((v) => (

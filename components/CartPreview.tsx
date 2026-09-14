@@ -13,7 +13,7 @@ export default function CartPreview() {
       <div className="flex flex-col items-center gap-3 p-6 text-center">
         <p className="text-sm text-black/50">Koszyk jest pusty.</p>
         <Link
-          href="/kolekcje"
+          href="/sklep"
           className="text-xs tracking-widest uppercase underline underline-offset-4 hover:text-black"
         >
           Zobacz kolekcje

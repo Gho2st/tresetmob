@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProduct, getProducts } from "@/lib/products";
+import { getSizeChart } from "@/lib/size-charts";
 import PriceTag from "@/components/PriceTag";
 import AddToCart from "@/components/AddToCart";
 import Gallery from "@/components/product/Gallery";
@@ -33,6 +34,10 @@ export default async function ProductPage({ params }: Params) {
 
   if (!product) notFound();
 
+  const sizeChart = product.sizeChartId
+    ? await getSizeChart(product.sizeChartId)
+    : null;
+
   return (
     <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-2">
       <Gallery images={product.images} title={product.title} />
@@ -50,7 +55,7 @@ export default async function ProductPage({ params }: Params) {
         <p className="mt-8 text-sm leading-relaxed text-neutral-600">
           {product.description}
         </p>
-        <AddToCart product={product} />
+        <AddToCart product={product} sizeChart={sizeChart} />
       </div>
     </main>
   );

@@ -82,7 +82,7 @@ export default function Kasa() {
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/kolekcje"
+            href="/sklep"
             className="inline-flex w-fit items-center gap-3 border border-black/30 px-7 py-4 text-sm tracking-[0.15em] transition-colors hover:border-black hover:bg-black hover:text-white"
           >
             WRÓĆ DO ZAKUPÓW
@@ -109,7 +109,7 @@ export default function Kasa() {
           Dodaj produkty do koszyka, żeby przejść do kasy.
         </p>
         <Link
-          href="/kolekcje"
+          href="/sklep"
           className="mt-4 inline-flex w-fit items-center gap-3 border border-black/30 px-7 py-4 text-sm tracking-[0.15em] transition-colors hover:border-black hover:bg-black hover:text-white"
         >
           ZOBACZ KOLEKCJE

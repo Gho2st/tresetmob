@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
+import type { SizeChartData } from "@/lib/size-charts";
+import SizeChartTable from "./SizeChartTable";
+import { DEFAULT_SIZE_CHART_ILLUSTRATION } from "@/lib/size-chart-defaults";
 
-const ROWS = [
-  { size: "28", waist: "71-74", hips: "89-92", inseam: "80" },
-  { size: "30", waist: "76-79", hips: "94-97", inseam: "81" },
-  { size: "32", waist: "81-84", hips: "99-102", inseam: "82" },
-  { size: "34", waist: "86-89", hips: "104-107", inseam: "83" },
-  { size: "36", waist: "91-94", hips: "109-112", inseam: "84" },
-  { size: "38", waist: "96-99", hips: "114-117", inseam: "85" },
-];
+const DEFAULT_NOTE =
+  "Wymiary orientacyjne — mogą się nieznacznie różnić w zależności od modelu.";
 
-export default function SizeChart() {
+export default function SizeChart({ chart }: { chart: SizeChartData }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -45,13 +43,16 @@ export default function SizeChart() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-md bg-white p-6"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto bg-white p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-wide uppercase">
-                Tablica rozmiarów
-              </h2>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-sm font-semibold tracking-wide uppercase">
+                  Tablica rozmiarów
+                </h2>
+                <p className="mt-1 text-xs text-black/40">{chart.name}</p>
+              </div>
               <button
                 type="button"
                 aria-label="Zamknij"
@@ -62,32 +63,22 @@ export default function SizeChart() {
               </button>
             </div>
 
-            <div className="mt-5 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 text-xs tracking-wide text-black/40 uppercase">
-                    <th className="py-2 pr-2 font-normal">Rozmiar</th>
-                    <th className="py-2 pr-2 font-normal">Talia (cm)</th>
-                    <th className="py-2 pr-2 font-normal">Biodra (cm)</th>
-                    <th className="py-2 font-normal">Nogawka (cm)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ROWS.map((row) => (
-                    <tr key={row.size} className="border-b border-black/5">
-                      <td className="py-2 pr-2 font-semibold">{row.size}</td>
-                      <td className="py-2 pr-2 text-black/70">{row.waist}</td>
-                      <td className="py-2 pr-2 text-black/70">{row.hips}</td>
-                      <td className="py-2 text-black/70">{row.inseam}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="relative mt-5 h-56 w-full sm:h-64">
+              <Image
+                src={chart.illustration ?? DEFAULT_SIZE_CHART_ILLUSTRATION}
+                alt={`Wymiary: ${chart.name}`}
+                fill
+                sizes="(max-width: 640px) 90vw, 512px"
+                className="object-contain"
+              />
+            </div>
+
+            <div className="mt-5">
+              <SizeChartTable sizes={chart.sizes} rows={chart.rows} />
             </div>
 
             <p className="mt-4 text-xs text-black/40">
-              Wymiary orientacyjne — mogą się nieznacznie różnić w zależności
-              od modelu.
+              {chart.note ?? DEFAULT_NOTE}
             </p>
           </div>
         </div>

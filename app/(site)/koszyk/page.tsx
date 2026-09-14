@@ -22,7 +22,7 @@ export default function Koszyk() {
           Przejrzyj kolekcje i dodaj coś, co Ci się spodoba.
         </p>
         <Link
-          href="/kolekcje"
+          href="/sklep"
           className="mt-4 inline-flex w-fit items-center gap-3 border border-black/30 px-7 py-4 text-sm tracking-[0.15em] transition-colors hover:border-black hover:bg-black hover:text-white"
         >
           ZOBACZ KOLEKCJE
@@ -49,7 +49,7 @@ export default function Koszyk() {
               key={`${item.slug}-${item.size}`}
               className="flex gap-5 py-6 sm:gap-8"
             >
-              <div className="relative aspect-3/4 w-24 shrink-0 bg-neutral-100 sm:w-32">
+              <div className="relative aspect-square w-24 shrink-0 bg-neutral-100 sm:w-32">
                 <Image
                   src={item.image}
                   alt={item.title}

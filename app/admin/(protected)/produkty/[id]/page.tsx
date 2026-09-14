@@ -1,16 +1,20 @@
 import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
 import { prisma } from "@/lib/prisma";
+import { getSizeChartOptions } from "@/lib/size-charts";
 import { updateProduct } from "../actions";
 
 type Params = { params: Promise<{ id: string }> };
 
 export default async function EditProdukt({ params }: Params) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { variants: true },
-  });
+  const [product, sizeCharts] = await Promise.all([
+    prisma.product.findUnique({
+      where: { id },
+      include: { variants: true },
+    }),
+    getSizeChartOptions(),
+  ]);
 
   if (!product) notFound();
 
@@ -19,7 +23,11 @@ export default async function EditProdukt({ params }: Params) {
       <h1 className="font-bebas text-4xl uppercase tracking-tight">
         Edytuj produkt
       </h1>
-      <ProductForm action={updateProduct.bind(null, product.id)} product={product} />
+      <ProductForm
+        action={updateProduct.bind(null, product.id)}
+        product={product}
+        sizeCharts={sizeCharts}
+      />
     </div>
   );
 }

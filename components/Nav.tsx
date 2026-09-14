@@ -10,7 +10,7 @@ import HoverMenu from "@/components/HoverMenu";
 import CartPreview from "@/components/CartPreview";
 import AccountPreview from "@/components/AccountPreview";
 
-const LINKS = [{ label: "Kolekcje", href: "/kolekcje" }];
+const LINKS = [{ label: "Sklep", href: "/sklep" }];
 
 export default function Nav() {
   const { count } = useCart();
@@ -45,7 +45,7 @@ export default function Nav() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/kolekcje?q=${encodeURIComponent(q)}` : "/kolekcje");
+    router.push(q ? `/sklep?q=${encodeURIComponent(q)}` : "/sklep");
     setSearchOpen(false);
     setQuery("");
   };

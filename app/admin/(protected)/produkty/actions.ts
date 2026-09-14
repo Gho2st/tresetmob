@@ -19,6 +19,7 @@ function readProductFields(formData: FormData) {
   const priceCents = parseCents(formData.get("price"));
   const salePriceCents = parseCents(formData.get("salePrice"));
   const images = formData.getAll("images").map(String).filter(Boolean);
+  const sizeChartId = String(formData.get("sizeChartId") ?? "").trim() || null;
 
   const variantSizes = formData.getAll("variantSize").map(String);
   const variantStocks = formData.getAll("variantStock").map(String);
@@ -48,14 +49,23 @@ function readProductFields(formData: FormData) {
     throw new Error("Stan magazynowy musi być liczbą nieujemną.");
   }
 
-  return { title, slug, description, priceCents, salePriceCents, images, variants };
+  return {
+    title,
+    slug,
+    description,
+    priceCents,
+    salePriceCents,
+    images,
+    sizeChartId,
+    variants,
+  };
 }
 
 function revalidateCatalog(slug?: string) {
   // "/" jako sam literal path czasem nie odświeża cache'u ISR na Vercelu przy
   // wizytach spoza sesji, która wywołała akcję — "layout" wymusza pełną inwalidację.
   revalidatePath("/", "layout");
-  revalidatePath("/kolekcje");
+  revalidatePath("/sklep");
   revalidatePath("/admin/produkty");
   if (slug) revalidatePath(`/produkty/${slug}`);
 }

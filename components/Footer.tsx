@@ -1,13 +1,12 @@
 import Link from "next/link";
-
-const HANDLE = "tresetmob";
-const IG_URL = "https://www.instagram.com/tresetmob/";
+import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
+import { SocialIcon } from "@/components/SocialIcons";
 
 const columns = [
   {
     title: "Sklep",
     links: [
-      { label: "Kolekcje", href: "/kolekcje" },
+      { label: "Produkty", href: "/sklep" },
       { label: "Koszyk", href: "/koszyk" },
     ],
   },
@@ -37,17 +36,23 @@ export default function Footer() {
           <Link href="/" className="font-bebas text-3xl tracking-wide">
             Tresetmob
           </Link>
-          <p className="max-w-2xs text-sm leading-relaxed text-white/50">
-            made in poland
-          </p>
-          <a
-            href={IG_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-fit text-sm tracking-[0.15em] underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
-          >
-            @{HANDLE}
-          </a>
+          {/* <p className="max-w-2xs text-sm leading-relaxed text-white/50">
+            Born in Poland
+          </p> */}
+          <div className="flex items-center gap-3">
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.id}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${social.label} @${SOCIAL_HANDLE}`}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/80 transition-colors hover:border-white hover:bg-white hover:text-black"
+              >
+                <SocialIcon id={social.id} className="h-4 w-4" />
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-x-10 gap-y-12 sm:grid-cols-3 sm:gap-x-16">

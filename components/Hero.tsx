@@ -29,7 +29,7 @@ export default async function Hero() {
 
       <div className="absolute inset-0 z-10 flex items-center justify-center">
         <Link
-          href="/kolekcje"
+          href="/sklep"
           className="bg-white text-black px-8 py-3 text-sm font-semibold tracking-wider
                      hover:bg-black hover:text-white transition-colors"
         >

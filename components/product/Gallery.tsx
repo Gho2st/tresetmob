@@ -62,7 +62,7 @@ export default function Gallery({ images, title }: Props) {
               type="button"
               key={src}
               onClick={() => open(i)}
-              className="relative aspect-3/4 w-full flex-none snap-start bg-neutral-100"
+              className="relative aspect-square w-full flex-none snap-start bg-neutral-100"
               aria-label={`Powiększ zdjęcie ${i + 1}`}
             >
               <Image
@@ -98,7 +98,7 @@ export default function Gallery({ images, title }: Props) {
             type="button"
             key={src}
             onClick={() => open(i)}
-            className="relative aspect-3/4 w-full cursor-zoom-in bg-neutral-100"
+            className="relative aspect-square w-full cursor-zoom-in bg-neutral-100"
             aria-label={`Powiększ zdjęcie ${i + 1}`}
           >
             <Image

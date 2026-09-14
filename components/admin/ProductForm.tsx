@@ -8,6 +8,7 @@ import { uploadProductImage } from "./actions";
 type ProductFormProps = {
   action: (formData: FormData) => void | Promise<void>;
   product?: Product;
+  sizeCharts: { id: string; name: string }[];
 };
 
 type ImageEntry =
@@ -29,7 +30,11 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-export default function ProductForm({ action, product }: ProductFormProps) {
+export default function ProductForm({
+  action,
+  product,
+  sizeCharts,
+}: ProductFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [title, setTitle] = useState(product?.title ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -270,6 +275,27 @@ export default function ProductForm({ action, product }: ProductFormProps) {
             Dodaj rozmiar
           </button>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-xs tracking-widest text-black/40 uppercase">
+          Tabela rozmiarów
+        </label>
+        <select
+          name="sizeChartId"
+          defaultValue={product?.sizeChartId ?? ""}
+          className="border border-black/20 bg-white px-4 py-3 text-sm focus:border-black focus:outline-none"
+        >
+          <option value="">Brak tabeli</option>
+          {sizeCharts.map((chart) => (
+            <option key={chart.id} value={chart.id}>
+              {chart.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-black/40">
+          Tabele tworzysz w zakładce „Tabele rozmiarów”.
+        </p>
       </div>
 
       <div className="flex flex-col gap-3">

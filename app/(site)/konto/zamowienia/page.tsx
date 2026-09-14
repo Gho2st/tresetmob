@@ -29,7 +29,7 @@ export default async function MojeZamowienia() {
         <div className="flex flex-col gap-4">
           <p className="text-sm text-black/50">Nie masz jeszcze żadnych zamówień.</p>
           <Link
-            href="/kolekcje"
+            href="/sklep"
             className="inline-flex w-fit items-center gap-3 border border-black/30 px-7 py-4 text-sm tracking-[0.15em] uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
           >
             Zobacz kolekcje

@@ -21,6 +21,8 @@ model Product {
   description    String
   images         String[]
   sortOrder      Int              @default(0)
+  sizeChartId    String?
+  sizeChart      SizeChart?       @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
   variants       ProductVariant[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -77,4 +79,17 @@ model OrderItem {
   size        String
   quantity    Int
   priceCents  Int
+}
+
+// Szablon tabeli rozmiarów — jeden na krój (np. „Koszulka oversize”), przypisywany wielu produktom.
+model SizeChart {
+  id           String    @id @default(cuid())
+  name         String
+  illustration String?
+  sizes        String[]
+  rows         Json // [{ label: "A", description: "Długość", values: ["69", "72", ...] }]
+  note         String?
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
