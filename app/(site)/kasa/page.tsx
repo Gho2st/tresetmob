@@ -9,7 +9,7 @@ import OrderSummary from "@/components/OrderSummary";
 import { createOrder } from "./actions";
 
 const DELIVERY_METHODS = [
-  { id: "kurier", label: "Kurier" },
+  { id: "kurier", label: "Kurier InPost" },
   { id: "paczkomat", label: "Paczkomat InPost" },
 ] as const;
 
@@ -53,6 +53,7 @@ export default function Kasa() {
         city: String(formData.get("city") ?? ""),
         inpostPoint: point,
         paymentMethod: payment,
+        acceptedTerms: formData.get("acceptTerms") === "on",
         items,
         subtotalCents: subtotal,
         totalCents: total,
@@ -275,6 +276,34 @@ export default function Kasa() {
             </label>
           ))}
         </fieldset>
+
+        <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-black/70">
+          <input
+            name="acceptTerms"
+            type="checkbox"
+            required
+            className="mt-1 h-4 w-4 shrink-0 accent-black"
+          />
+          <span>
+            Akceptuję{" "}
+            <Link
+              href="/regulamin"
+              target="_blank"
+              className="text-black underline underline-offset-4 hover:text-black/60"
+            >
+              Regulamin sklepu
+            </Link>{" "}
+            oraz{" "}
+            <Link
+              href="/polityka-prywatnosci"
+              target="_blank"
+              className="text-black underline underline-offset-4 hover:text-black/60"
+            >
+              Politykę prywatności
+            </Link>
+            .
+          </span>
+        </label>
       </form>
 
       <div className="w-full shrink-0 lg:w-80">

@@ -15,6 +15,7 @@ type CreateOrderInput = {
   city?: string;
   inpostPoint?: string;
   paymentMethod: string;
+  acceptedTerms: boolean;
   items: CartItem[];
   subtotalCents: number;
   totalCents: number;
@@ -34,6 +35,9 @@ export async function createOrder(input: CreateOrderInput) {
   }
   if (input.deliveryMethod === "paczkomat" && !input.inpostPoint) {
     throw new Error("Wybierz paczkomat.");
+  }
+  if (!input.acceptedTerms) {
+    throw new Error("Zaakceptuj regulamin sklepu.");
   }
   if (input.items.length === 0) {
     throw new Error("Koszyk jest pusty.");

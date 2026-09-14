@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FaqAccordion from "@/components/FaqAccordion";
+import { CONTACT } from "@/lib/contact";
+import { SHOP_POLICY } from "@/lib/shop-policy";
+import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
 
 export const metadata: Metadata = { title: "Centrum pomocy" };
+
+const INSTAGRAM_URL = SOCIAL_LINKS.find((social) => social.id === "instagram")?.href;
 
 const CATEGORIES = [
   {
@@ -15,8 +20,7 @@ const CATEGORIES = [
       },
       {
         question: "Czy mogę zmienić lub anulować zamówienie?",
-        answer:
-          "Jeśli zamówienie nie zostało jeszcze wysłane, napisz do nas jak najszybciej — postaramy się je zmienić lub anulować. Po wysyłce można skorzystać z prawa zwrotu w ciągu 14 dni.",
+        answer: `Tak, dopóki zamówienie nie zostało wysłane — napisz lub zadzwoń do nas jak najszybciej. Po wysyłce możesz skorzystać z prawa zwrotu w ciągu ${SHOP_POLICY.returnDays} dni od otrzymania paczki.`,
       },
       {
         question: "Nie dostałem potwierdzenia zamówienia — co robić?",
@@ -31,17 +35,15 @@ const CATEGORIES = [
       {
         question: "Ile kosztuje dostawa?",
         answer:
-          "Dostawa jest bezpłatna — niezależnie od wybranej metody (kurier lub Paczkomat InPost) i wartości zamówienia.",
+          "Dostawa jest bezpłatna — niezależnie od wybranej metody (kurier InPost lub Paczkomat InPost) i wartości zamówienia.",
       },
       {
         question: "Ile trwa realizacja i dostawa zamówienia?",
-        answer:
-          "Zamówienia pakujemy zwykle w ciągu 1–3 dni roboczych od zaksięgowania płatności. Czas samej dostawy zależy od przewoźnika — standardowo to 1–2 dni robocze.",
+        answer: `Zamówienia wysyłamy w ciągu ${SHOP_POLICY.dispatchWorkdays} dni roboczych od zaksięgowania płatności (od poniedziałku do piątku). Doręczenie przez InPost trwa zwykle 1–2 dni robocze.`,
       },
       {
         question: "Czy dostarczacie za granicę?",
-        answer:
-          "Obecnie realizujemy dostawy tylko na terenie Polski.",
+        answer: "Obecnie realizujemy dostawy tylko na terenie Polski.",
       },
     ],
   },
@@ -51,7 +53,7 @@ const CATEGORIES = [
       {
         question: "Jakie metody płatności są dostępne?",
         answer:
-          "Płatności obsługiwane są przez Przelewy24 — możesz zapłacić szybkim przelewem, BLIK-iem lub kartą.",
+          "Płacisz online: szybkim przelewem (pay-by-link), BLIK-iem, kartą płatniczą, Google Pay lub Apple Pay.",
       },
       {
         question: "Czy płatność online jest bezpieczna?",
@@ -65,13 +67,15 @@ const CATEGORIES = [
     items: [
       {
         question: "Jak zwrócić produkt?",
-        answer:
-          "Masz 14 dni od otrzymania przesyłki na zwrot bez podania przyczyny. Pełne zasady i instrukcję krok po kroku znajdziesz na stronie Zwroty.",
+        answer: `Masz ${SHOP_POLICY.returnDays} dni od otrzymania przesyłki na zwrot bez podania przyczyny. Wypełnij formularz, dołącz go do paczki i odeślij ją na nasz adres — instrukcję krok po kroku znajdziesz na stronie Zwroty i reklamacje.`,
+      },
+      {
+        question: "Czy mogę wymienić rozmiar?",
+        answer: `Tak, w ciągu ${SHOP_POLICY.exchangeDays} dni od otrzymania zamówienia. Odeślij produkt tak jak przy zwrocie i wpisz w formularzu, na jaki rozmiar lub model chcesz go wymienić.`,
       },
       {
         question: "Produkt jest wadliwy — co teraz?",
-        answer:
-          "Napisz do nas z numerem zamówienia i opisem (najlepiej ze zdjęciem) — rozpatrzymy reklamację w ciągu 14 dni.",
+        answer: `Napisz na ${CONTACT.email} z numerem zamówienia i opisem (najlepiej ze zdjęciem) — odpowiemy w ciągu ${SHOP_POLICY.complaintResponseDays} dni. Jeśli do rozpatrzenia reklamacji potrzebny będzie produkt, poprosimy o jego odesłanie.`,
       },
     ],
   },
@@ -80,17 +84,17 @@ const CATEGORIES = [
     items: [
       {
         question: "Jak dobrać rozmiar?",
-        answer:
-          "Na każdej stronie produktu, obok wyboru rozmiaru, znajdziesz link „Tablica rozmiarów” z wymiarami w centymetrach dla poszczególnych rozmiarów.",
+        answer: `Na każdej stronie produktu, obok wyboru rozmiaru, znajdziesz link „Tablica rozmiarów” z wymiarami w centymetrach. Rzeczywiste wymiary mogą różnić się od podanych o maksymalnie ${SHOP_POLICY.sizeToleranceCm} cm.`,
       },
       {
         question: "Rozmiar którego szukam jest niedostępny — co robić?",
-        answer:
-          "Wyprzedane rozmiary czasem wracają do sprzedaży. Napisz do nas na Instagramie @tresetmob, a damy znać, gdy dany produkt się doda.",
+        answer: `Wyprzedane rozmiary czasem wracają do sprzedaży. Napisz do nas na Instagramie @${SOCIAL_HANDLE}, a damy znać, gdy dany produkt wróci.`,
       },
     ],
   },
 ];
+
+const linkClass = "text-black underline underline-offset-4 hover:text-black/60";
 
 export default function CentrumPomocy() {
   return (
@@ -119,28 +123,26 @@ export default function CentrumPomocy() {
       </div>
 
       <div className="border border-black/10 p-6 text-sm leading-relaxed text-black/70">
-        Nie znalazłeś odpowiedzi?{" "}
-        <a
-          href="mailto:kontakt@tresetmob.pl"
-          className="text-black underline underline-offset-4 hover:text-black/60"
-        >
-          kontakt@tresetmob.pl
+        Nie znalazłeś odpowiedzi? Napisz na{" "}
+        <a href={`mailto:${CONTACT.email}`} className={linkClass}>
+          {CONTACT.email}
         </a>{" "}
-        albo napisz na Instagramie{" "}
+        albo na Instagramie{" "}
         <a
-          href="https://www.instagram.com/tresetmob/"
+          href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black underline underline-offset-4 hover:text-black/60"
+          className={linkClass}
         >
-          @tresetmob
+          @{SOCIAL_HANDLE}
         </a>
-        . Więcej o zwrotach znajdziesz na stronie{" "}
-        <Link
-          href="/zwroty"
-          className="text-black underline underline-offset-4 hover:text-black/60"
-        >
-          Zwroty
+        . Szczegóły znajdziesz na stronach{" "}
+        <Link href="/zwroty" className={linkClass}>
+          Zwroty i reklamacje
+        </Link>{" "}
+        oraz{" "}
+        <Link href="/regulamin" className={linkClass}>
+          Regulamin
         </Link>
         .
       </div>

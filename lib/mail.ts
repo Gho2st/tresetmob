@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer from "nodemailer";
 import type { Order, OrderItem } from "@/lib/generated/prisma/client";
 import { formatPrice } from "@/lib/cart";
+import { CONTACT } from "@/lib/contact";
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
@@ -68,7 +69,7 @@ function emailShell(title: string, bodyHtml: string) {
         ${bodyHtml}
       </div>
       <div style="padding:24px;border-top:1px solid #eee;font-size:12px;color:#888;">
-        Tresetmob · kontakt@tresetmob.pl
+        Tresetmob · ${CONTACT.email}
       </div>
     </div>`;
 }
