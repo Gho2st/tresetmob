@@ -58,6 +58,15 @@ export default function Kasa() {
         subtotalCents: subtotal,
         totalCents: total,
       });
+
+      if (result.redirectUrl) {
+        // Zamówienie już zapisane w bazie (ze statusem płatności "oczekuje") —
+        // koszyk czyścimy przed przejściem do bramki, tak jak dla innych metod.
+        clear();
+        window.location.href = result.redirectUrl;
+        return;
+      }
+
       setOrder({ number: result.number, total });
       clear();
     } catch {

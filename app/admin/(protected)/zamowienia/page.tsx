@@ -48,7 +48,22 @@ export default async function AdminZamowienia() {
                         .filter(Boolean)
                         .join(", ")}
                 </span>
-                <span>{order.paymentMethod}</span>
+                <span>
+                  {order.paymentMethod}
+                  {order.paymentStatus !== "oplacone" && (
+                    <span
+                      className={`ml-2 border px-1.5 py-0.5 text-[10px] tracking-widest uppercase ${
+                        order.paymentStatus === "nieudane"
+                          ? "border-red-700 text-red-700"
+                          : "border-amber-600 text-amber-700"
+                      }`}
+                    >
+                      {order.paymentStatus === "nieudane"
+                        ? "Płatność nieudana"
+                        : "Oczekuje na płatność"}
+                    </span>
+                  )}
+                </span>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">

@@ -21,12 +21,12 @@ export default function Item({
 
   return (
     <Link href={href} className="group block w-full">
-      <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
+      <div className="relative aspect-3/4 w-full overflow-hidden bg-neutral-100">
         <Image
           src={main}
           alt={title}
           fill
-          sizes="(max-width: 639px) 45vw, (max-width: 1279px) 30vw, 22vw"
+          sizes="(max-width: 639px) 45vw, (max-width: 1279px) 30vw, (max-width: 1535px) 22vw, 28vw"
           className="object-contain transition-opacity duration-500 group-hover:opacity-0"
         />
         {hover && (
@@ -35,7 +35,7 @@ export default function Item({
             alt=""
             aria-hidden
             fill
-            sizes="(max-width: 639px) 45vw, (max-width: 1279px) 30vw, 22vw"
+            sizes="(max-width: 639px) 45vw, (max-width: 1279px) 30vw, (max-width: 1535px) 22vw, 28vw"
             className="object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
           />
         )}

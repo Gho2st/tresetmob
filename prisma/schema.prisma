@@ -59,6 +59,10 @@ model Order {
   city           String?
   inpostPoint    String?
   paymentMethod  String
+  // "oczekuje" | "oplacone" | "nieudane" — status realnej bramki (na razie HotPay);
+  // inne metody płatności nie są jeszcze zintegrowane, więc dostają "oplacone" od razu.
+  paymentStatus  String      @default("oplacone")
+  paymentRef     String?
   subtotalCents  Int
   discountCents  Int         @default(0)
   totalCents     Int

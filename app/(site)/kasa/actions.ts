@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import type { CartItem } from "@/lib/cart";
 import { sendOrderConfirmationEmail } from "@/lib/mail";
+import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
 
 type CreateOrderInput = {
   email: string;
@@ -43,9 +44,29 @@ export async function createOrder(input: CreateOrderInput) {
     throw new Error("Koszyk jest pusty.");
   }
 
+  const number = generateOrderNumber();
+
+  // Dla HotPay najpierw inicjujemy płatność — zamówienie zapisujemy w bazie
+  // dopiero gdy bramka faktycznie zwróci link do zapłaty, żeby nie zostawiać
+  // "martwych" zamówień po nieudanej inicjalizacji.
+  let redirectUrl: string | undefined;
+  if (input.paymentMethod === "hotpay") {
+    const init = await initHotpayPayment({
+      orderNumber: number,
+      amountCents: input.totalCents,
+      description: `Zamówienie ${number}`,
+      email: input.email,
+      returnUrl: `${siteUrl()}/kasa/potwierdzenie?number=${number}`,
+    });
+    if (!init.ok) {
+      throw new Error(init.error);
+    }
+    redirectUrl = init.url;
+  }
+
   const order = await prisma.order.create({
     data: {
-      number: generateOrderNumber(),
+      number,
       customerEmail: input.email,
       customerName: `${input.firstName} ${input.lastName}`.trim(),
       phone: input.phone,
@@ -55,6 +76,7 @@ export async function createOrder(input: CreateOrderInput) {
       city: input.city,
       inpostPoint: input.inpostPoint,
       paymentMethod: input.paymentMethod,
+      paymentStatus: input.paymentMethod === "hotpay" ? "oczekuje" : "oplacone",
       subtotalCents: input.subtotalCents,
       discountCents: Math.max(input.subtotalCents - input.totalCents, 0),
       totalCents: input.totalCents,
@@ -72,7 +94,11 @@ export async function createOrder(input: CreateOrderInput) {
     include: { items: true },
   });
 
-  await sendOrderConfirmationEmail(order);
+  // Dla HotPay potwierdzenie wysyłamy dopiero z webhooka, po realnym
+  // zaksięgowaniu płatności — tutaj klient dopiero jedzie ją opłacić.
+  if (input.paymentMethod !== "hotpay") {
+    await sendOrderConfirmationEmail(order);
+  }
 
-  return { number: order.number };
+  return { number: order.number, redirectUrl };
 }

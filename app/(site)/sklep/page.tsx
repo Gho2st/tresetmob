@@ -17,7 +17,7 @@ export default async function Sklep({ searchParams }: Props) {
   const filtered = filterAndSortProducts(products, params);
 
   return (
-    <section className="mx-auto w-full max-w-[1600px] px-6 py-16 text-black sm:px-12 lg:px-20 lg:py-20">
+    <section className="mx-auto w-full max-w-[1600px] px-6 py-16 text-black sm:px-12 lg:px-20 lg:py-20 2xl:max-w-[1900px]">
       <div className="mb-10 flex flex-col gap-3">
         <span className="text-xs tracking-[0.3em] text-black/40">KOLEKCJE</span>
         <div className="flex flex-wrap items-baseline justify-between gap-4">

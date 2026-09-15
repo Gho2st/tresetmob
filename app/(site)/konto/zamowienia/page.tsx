@@ -70,10 +70,25 @@ export default async function MojeZamowienia() {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <span className="border border-black/20 px-3 py-1 text-xs tracking-widest uppercase">
-                  {order.status}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="border border-black/20 px-3 py-1 text-xs tracking-widest uppercase">
+                    {order.status}
+                  </span>
+                  {order.paymentStatus !== "oplacone" && (
+                    <span
+                      className={`border px-3 py-1 text-xs tracking-widest uppercase ${
+                        order.paymentStatus === "nieudane"
+                          ? "border-red-700 text-red-700"
+                          : "border-amber-600 text-amber-700"
+                      }`}
+                    >
+                      {order.paymentStatus === "nieudane"
+                        ? "Płatność nieudana"
+                        : "Oczekuje na płatność"}
+                    </span>
+                  )}
+                </div>
                 <span className="font-semibold">
                   {formatPrice(order.totalCents)}
                 </span>

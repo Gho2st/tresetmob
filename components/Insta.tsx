@@ -3,7 +3,7 @@ import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
 import { SocialIcon } from "@/components/SocialIcons";
 
 const DESCRIPTIONS = {
-  instagram: "Kadry i nowości",
+  instagram: "Świeże kadry i nowości",
   tiktok: "Kulisy i krótkie filmy",
 } as const;
 
@@ -11,83 +11,121 @@ export default function Insta() {
   return (
     <section
       aria-labelledby="social-heading"
-      className="group flex w-full flex-col bg-white text-black lg:h-screen lg:flex-row"
+      className="xl:my-24 mx-auto flex w-full max-w-[1280px] flex-col bg-black text-white lg:h-[62vh] lg:max-h-[560px] lg:min-h-[420px] lg:flex-row 2xl:max-w-[1440px] 2xl:max-h-[620px]"
     >
       {/* ---------- zdjęcie ---------- */}
-      <div className="relative h-[70vh] w-full overflow-hidden lg:h-full lg:w-1/2">
+      <figure className="group relative m-0 aspect-[3/2] w-full overflow-hidden lg:aspect-auto lg:h-full lg:w-[54%] 2xl:w-[58%]">
         <Image
-          src="/ig.png"
+          src="/insta.png"
           alt="Kadr z profilu @tresetmob"
           fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 54vw, 58vw"
+          className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
           priority
         />
 
-        <div className="absolute bottom-6 left-6 flex items-center gap-2.5 bg-white px-3 py-2">
-          {SOCIAL_LINKS.map((social) => (
-            <SocialIcon key={social.id} id={social.id} className="h-3.5 w-3.5" />
-          ))}
-          <span className="text-xs tracking-[0.15em]">@{SOCIAL_HANDLE}</span>
-        </div>
-      </div>
+        {/* scrim pod podpisem, żeby biały tekst zawsze był czytelny */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/25 to-transparent"
+        />
+
+        <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-4 sm:p-5">
+          <span className="font-bebas text-lg leading-none tracking-wide">
+            @{SOCIAL_HANDLE}
+          </span>
+          <span className="flex items-center gap-2.5 text-white/70">
+            {SOCIAL_LINKS.map((social) => (
+              <SocialIcon
+                key={social.id}
+                id={social.id}
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+              />
+            ))}
+          </span>
+        </figcaption>
+      </figure>
 
       {/* ---------- treść ---------- */}
-      <div className="flex w-full flex-col justify-center gap-10 border-t border-black/10 px-6 py-16 sm:px-12 lg:w-1/2 lg:border-t-0 lg:border-l lg:px-20">
-        <div className="flex items-center gap-4">
-          <span className="text-xs tracking-[0.3em] text-black/40">04</span>
-          <span className="h-px max-w-16 flex-1 bg-black/20" />
-          <span className="text-xs tracking-[0.3em] text-black/40">SOCIAL</span>
-        </div>
-
-        <h2
-          id="social-heading"
-          className="font-bebas text-6xl uppercase leading-[0.85] tracking-tight sm:text-7xl lg:text-8xl"
-        >
-          Reszta
-          <br />
-          dzieje się
-          <br />
-          w socialach
-        </h2>
-
-        <p className="max-w-xs text-sm leading-relaxed text-black/50">
-          Świeże kadry na Instagramie, kulisy i krótkie filmy na TikToku.
-        </p>
-
-        <ul className="flex max-w-md flex-col border-b border-black/10">
-          {SOCIAL_LINKS.map((social) => (
-            <li key={social.id} className="border-t border-black/10">
-              <a
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group/link flex items-center gap-4 py-5"
+      <div className="flex w-full lg:w-[46%] 2xl:w-[42%]">
+        {/* kolumna tekstowa ma własną szerokość, żeby na szerokich ekranach
+            nie rozjeżdżała się na całą połówkę sekcji */}
+        <div className="flex w-full max-w-[460px] flex-col justify-between gap-8 px-5 py-8 sm:px-7 lg:px-10 lg:py-9 2xl:max-w-[520px] 2xl:px-12 2xl:py-11">
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center gap-3 text-[0.65rem] tracking-[0.25em] text-white/35">
+              <span aria-hidden="true" className="h-px w-8 bg-white/25" />
+            </div>
+            <h2
+              id="social-heading"
+              className="font-bebas text-[clamp(1.875rem,2.6vw,3rem)] uppercase leading-[0.9] tracking-[-0.01em]"
+            >
+              <span className="block">Reszta</span>
+              <span className="block">dzieje się</span>
+              <span
+                className="block text-transparent"
+                style={{ WebkitTextStroke: "1px rgba(255,255,255,0.85)" }}
               >
-                <SocialIcon id={social.id} className="h-5 w-5 shrink-0" />
-                <span className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-sm tracking-[0.15em] uppercase">
-                    {social.label}
-                  </span>
-                  <span className="text-xs text-black/40">
-                    {DESCRIPTIONS[social.id]}
-                  </span>
-                </span>
-                <span className="hidden text-xs tracking-[0.15em] text-black/40 sm:inline">
-                  @{SOCIAL_HANDLE}
-                </span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/30 transition-all duration-300 group-hover/link:border-black group-hover/link:bg-black group-hover/link:text-white">
+                w socialach
+              </span>
+            </h2>
+
+            <p className="max-w-[36ch] text-[0.78rem] leading-[1.65] text-white/55">
+              Zdjęcia z ostatnich sesji lecą na Instagram, a wszystko, co dzieje
+              się obok kadru, trafia na TikToka.
+            </p>
+          </div>
+
+          {/* na mobile lista idzie na pełną szerokość, na desktopie
+              trzyma się tej samej osi co nagłówek */}
+          <ul className="-mx-5 border-t border-white/15 sm:-mx-7 lg:-mx-4">
+            {SOCIAL_LINKS.map((social) => (
+              <li key={social.id} className="border-b border-white/15">
+                <a
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/link relative isolate flex items-center gap-4 px-5 py-3.5 transition-colors duration-300 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white sm:px-7 lg:px-4"
+                >
+                  {/* wypełnienie wjeżdżające od lewej */}
                   <span
                     aria-hidden="true"
-                    className="text-sm transition-transform duration-300 group-hover/link:translate-x-0.5"
-                  >
-                    →
+                    className="absolute inset-0 -z-10 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover/link:scale-x-100 motion-reduce:transition-none"
+                  />
+
+                  <SocialIcon
+                    id={social.id}
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
+
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="font-bebas text-base leading-none tracking-wide 2xl:text-lg">
+                      {social.label}
+                    </span>
+                    <span className="mt-1 truncate text-[0.68rem] text-white/45 transition-colors duration-300 group-hover/link:text-black/55">
+                      {DESCRIPTIONS[social.id]}
+                    </span>
                   </span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="h-4 w-4 shrink-0 transition-transform duration-300 ease-out group-hover/link:-translate-y-1 group-hover/link:translate-x-1 motion-reduce:transition-none"
+                  >
+                    <path
+                      d="M7 17 17 7M8 7h9v9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="square"
+                    />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );

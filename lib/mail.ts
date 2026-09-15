@@ -19,6 +19,11 @@ function getTransporter() {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Bez tego źle skonfigurowany/nieosiągalny SMTP potrafi wisieć na
+    // domyślnych timeoutach OS (dziesiątki sekund) i blokować np. webhook płatności.
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 8000,
   });
 
   return transporter;
