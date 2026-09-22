@@ -110,6 +110,18 @@ export default function ProductForm({
     });
   };
 
+  // Przeciąganie opiera się na HTML5 drag and drop, które na ekranie dotykowym
+  // w ogóle nie startuje — stąd druga droga: przesuwanie o jedno miejsce.
+  const shiftImage = (index: number, delta: number) => {
+    setImages((prev) => {
+      const target = index + delta;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!formRef.current) return;
@@ -175,7 +187,7 @@ export default function ProductForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-xs tracking-widest text-black/40 uppercase">
             Cena (zł)
@@ -254,7 +266,7 @@ export default function ProductForm({
             </div>
           ))}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input
             value={newSize}
             onChange={(e) => setNewSize(e.target.value)}
@@ -265,12 +277,12 @@ export default function ProductForm({
               }
             }}
             placeholder="np. M"
-            className="border border-black/20 px-4 py-2 text-sm focus:border-black focus:outline-none"
+            className="min-w-0 flex-1 border border-black/20 px-4 py-2 text-sm focus:border-black focus:outline-none sm:flex-none"
           />
           <button
             type="button"
             onClick={addVariant}
-            className="border border-black/30 px-4 text-xs tracking-widest uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
+            className="border border-black/30 px-4 py-2 text-xs tracking-widest uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
           >
             Dodaj rozmiar
           </button>
@@ -303,10 +315,11 @@ export default function ProductForm({
           Zdjęcia
         </label>
         <p className="text-xs text-black/40">
-          Przeciągnij, żeby zmienić kolejność — pierwsze zdjęcie jest głównym.
+          Kolejność zmienisz przeciąganiem, a na telefonie strzałkami. Pierwsze
+          zdjęcie jest głównym.
         </p>
         <div className="flex flex-wrap gap-3">
-          {images.map((entry) => (
+          {images.map((entry, index) => (
             <div
               key={entry.id}
               draggable
@@ -344,10 +357,30 @@ export default function ProductForm({
                 type="button"
                 onClick={() => removeImage(entry.id)}
                 aria-label="Usuń zdjęcie"
-                className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center bg-black text-xs text-white"
+                className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center bg-black text-xs text-white"
               >
                 ×
               </button>
+              <div className="absolute bottom-1 left-1 flex gap-1 sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => shiftImage(index, -1)}
+                  disabled={index === 0}
+                  aria-label="Przesuń zdjęcie wcześniej"
+                  className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => shiftImage(index, 1)}
+                  disabled={index === images.length - 1}
+                  aria-label="Przesuń zdjęcie później"
+                  className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
+                >
+                  ›
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -370,7 +403,7 @@ export default function ProductForm({
       <button
         type="submit"
         disabled={saving}
-        className="mt-2 w-fit bg-black px-7 py-3.5 text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className="mt-2 w-full bg-black px-7 py-3.5 sm:w-fit text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {saving ? "Zapisywanie..." : "Zapisz produkt"}
       </button>

@@ -10,8 +10,8 @@ export default async function AdminProdukty() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-bebas text-4xl uppercase tracking-tight">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
           Produkty
         </h1>
         <Link
@@ -33,7 +33,7 @@ export default async function AdminProdukty() {
             const outOfStock = product.variants.filter((v) => v.stock === 0).length;
 
             return (
-            <li key={product.id} className="flex items-center gap-5 py-4">
+            <li key={product.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 sm:flex-nowrap sm:gap-5">
               <div className="flex shrink-0 flex-col">
                 <form
                   action={async () => {
@@ -79,11 +79,11 @@ export default async function AdminProdukty() {
                 )}
               </div>
 
-              <div className="flex-1">
-                <p className="text-sm font-semibold uppercase tracking-wide">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold tracking-wide break-words uppercase">
                   {product.title}
                 </p>
-                <p className="flex items-center gap-2 text-xs text-black/40">
+                <p className="flex flex-wrap items-center gap-x-2 text-xs text-black/40">
                   <PriceTag
                     priceCents={product.priceCents}
                     salePriceCents={product.salePriceCents}
@@ -100,26 +100,30 @@ export default async function AdminProdukty() {
                 </p>
               </div>
 
-              <Link
-                href={`/admin/produkty/${product.id}`}
-                className="text-xs tracking-widest uppercase underline underline-offset-4 hover:text-black/60"
-              >
-                Edytuj
-              </Link>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteProduct(product.id);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="text-xs tracking-widest text-red-700 uppercase underline underline-offset-4 hover:text-red-900"
+              {/* Na wąskim ekranie akcje schodzą do własnego rzędu — obok
+                  nazwy produktu nie starcza dla nich miejsca. */}
+              <div className="flex w-full items-center justify-end gap-5 sm:w-auto sm:gap-5">
+                <Link
+                  href={`/admin/produkty/${product.id}`}
+                  className="text-xs tracking-widest uppercase underline underline-offset-4 hover:text-black/60"
                 >
-                  Usuń
-                </button>
-              </form>
+                  Edytuj
+                </Link>
+
+                <form
+                  action={async () => {
+                    "use server";
+                    await deleteProduct(product.id);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="text-xs tracking-widest text-red-700 uppercase underline underline-offset-4 hover:text-red-900"
+                  >
+                    Usuń
+                  </button>
+                </form>
+              </div>
             </li>
             );
           })}

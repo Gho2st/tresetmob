@@ -150,7 +150,7 @@ export default function HeroForm({ hero }: { hero: HeroMedia }) {
       <button
         type="submit"
         disabled={saving}
-        className="mt-2 w-fit bg-black px-7 py-3.5 text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className="mt-2 w-full bg-black px-7 py-3.5 sm:w-fit text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {saving ? "Zapisywanie..." : "Zapisz hero"}
       </button>

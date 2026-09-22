@@ -250,7 +250,7 @@ export default function SizeChartForm({ action, chart }: SizeChartFormProps) {
 
       <div className="flex flex-col gap-3">
         <label className={fieldLabel}>Tabela (cm)</label>
-        <div className="overflow-x-auto">
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <table className="border-collapse text-sm">
             <thead>
               <tr>
@@ -341,7 +341,7 @@ export default function SizeChartForm({ action, chart }: SizeChartFormProps) {
               }
             }}
             placeholder="np. XXL"
-            className="border border-black/20 px-4 py-2 text-sm focus:border-black focus:outline-none"
+            className="min-w-0 flex-1 border border-black/20 px-4 py-2 text-sm focus:border-black focus:outline-none sm:flex-none"
           />
           <button type="button" onClick={addSize} className={secondaryButton}>
             Dodaj rozmiar
@@ -373,7 +373,7 @@ export default function SizeChartForm({ action, chart }: SizeChartFormProps) {
       <button
         type="submit"
         disabled={saving}
-        className="mt-2 w-fit bg-black px-7 py-3.5 text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className="mt-2 w-full bg-black px-7 py-3.5 sm:w-fit text-sm tracking-widest text-white uppercase transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {saving ? "Zapisywanie..." : "Zapisz tabelę"}
       </button>

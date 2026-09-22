@@ -8,8 +8,8 @@ export default async function AdminZamowienia() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-bebas text-4xl uppercase tracking-tight">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
           Zamówienia
         </h1>
         <span className="text-sm text-black/40">{orders.length} zamówień</span>
@@ -37,8 +37,8 @@ export default async function AdminZamowienia() {
                 <OrderStatusSelect orderId={order.id} status={order.status} />
               </div>
 
-              <div className="flex flex-wrap gap-6 text-xs text-black/50">
-                <span>
+              <div className="flex flex-col gap-1 text-xs text-black/50 sm:flex-row sm:flex-wrap sm:gap-x-6">
+                <span className="break-words">
                   {order.customerName} · {order.customerEmail} · {order.phone}
                 </span>
                 <span>
@@ -66,7 +66,7 @@ export default async function AdminZamowienia() {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {order.items.map((item) => (
                   <div
                     key={item.id}

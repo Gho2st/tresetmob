@@ -9,8 +9,8 @@ export default async function TabeleRozmiarow() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-bebas text-4xl uppercase tracking-tight">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
           Tabele rozmiarów
         </h1>
         <Link
@@ -33,7 +33,7 @@ export default async function TabeleRozmiarow() {
       ) : (
         <ul className="flex flex-col divide-y divide-black/10 border-y border-black/10">
           {charts.map((chart) => (
-            <li key={chart.id} className="flex items-center gap-5 py-4">
+            <li key={chart.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 sm:flex-nowrap sm:gap-5">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-black/10 bg-neutral-50">
                 <Image
                   src={chart.illustration ?? DEFAULT_SIZE_CHART_ILLUSTRATION}
@@ -44,8 +44,8 @@ export default async function TabeleRozmiarow() {
                 />
               </div>
 
-              <div className="flex-1">
-                <p className="text-sm font-semibold uppercase tracking-wide">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold tracking-wide break-words uppercase">
                   {chart.name}
                 </p>
                 <p className="text-xs text-black/40">
@@ -54,26 +54,28 @@ export default async function TabeleRozmiarow() {
                 </p>
               </div>
 
-              <Link
-                href={`/admin/tabele-rozmiarow/${chart.id}`}
-                className="text-xs tracking-widest uppercase underline underline-offset-4 hover:text-black/60"
-              >
-                Edytuj
-              </Link>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteSizeChart(chart.id);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="text-xs tracking-widest text-red-700 uppercase underline underline-offset-4 hover:text-red-900"
+              <div className="flex w-full items-center justify-end gap-5 sm:w-auto">
+                <Link
+                  href={`/admin/tabele-rozmiarow/${chart.id}`}
+                  className="text-xs tracking-widest uppercase underline underline-offset-4 hover:text-black/60"
                 >
-                  Usuń
-                </button>
-              </form>
+                  Edytuj
+                </Link>
+
+                <form
+                  action={async () => {
+                    "use server";
+                    await deleteSizeChart(chart.id);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="text-xs tracking-widest text-red-700 uppercase underline underline-offset-4 hover:text-red-900"
+                  >
+                    Usuń
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
         </ul>

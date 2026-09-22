@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function AdminNotFound() {
   return (
     <div className="flex flex-col items-start gap-4 py-10">
-      <h1 className="font-bebas text-4xl uppercase tracking-tight">
+      <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
         Nie znaleziono
       </h1>
       <p className="text-sm text-black/50">

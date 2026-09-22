@@ -7,7 +7,7 @@ export default async function NowyProdukt() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-bebas text-4xl uppercase tracking-tight">
+      <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
         Nowy produkt
       </h1>
       <ProductForm action={createProduct} sizeCharts={sizeCharts} />
