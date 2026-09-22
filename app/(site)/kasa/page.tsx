@@ -4,7 +4,11 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/cart";
-import { INPOST_POINTS } from "@/lib/delivery";
+import {
+  formatInPostPoint,
+  type InPostPoint,
+} from "@/lib/delivery";
+import InPostGeowidget from "@/components/checkout/InPostGeowidget";
 import OrderSummary from "@/components/OrderSummary";
 import { createOrder } from "./actions";
 
@@ -24,7 +28,7 @@ export default function Kasa() {
   const formRef = useRef<HTMLFormElement>(null);
   const [delivery, setDelivery] =
     useState<(typeof DELIVERY_METHODS)[number]["id"]>("kurier");
-  const [point, setPoint] = useState("");
+  const [point, setPoint] = useState<InPostPoint | null>(null);
   const [payment, setPayment] = useState(PAYMENT_METHODS[0].id);
   const [total, setTotal] = useState(subtotal);
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +41,12 @@ export default function Kasa() {
     e.preventDefault();
     if (!formRef.current) return;
     setError(null);
+
+    if (delivery === "paczkomat" && !point) {
+      setError("Wybierz paczkomat.");
+      return;
+    }
+
     setSubmitting(true);
 
     const formData = new FormData(formRef.current);
@@ -51,7 +61,7 @@ export default function Kasa() {
         address: String(formData.get("address") ?? ""),
         postalCode: String(formData.get("postalCode") ?? ""),
         city: String(formData.get("city") ?? ""),
-        inpostPoint: point,
+        inpostPoint: point ? formatInPostPoint(point) : "",
         paymentMethod: payment,
         acceptedTerms: formData.get("acceptTerms") === "on",
         items,
@@ -242,21 +252,7 @@ export default function Kasa() {
               </div>
             </>
           ) : (
-            <select
-              required
-              value={point}
-              onChange={(e) => setPoint(e.target.value)}
-              className="border border-black/20 bg-white px-4 py-3 text-sm focus:border-black focus:outline-none"
-            >
-              <option value="" disabled>
-                Wybierz paczkomat
-              </option>
-              {INPOST_POINTS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.id} — {p.address}
-                </option>
-              ))}
-            </select>
+            <InPostGeowidget value={point} onSelect={setPoint} />
           )}
         </fieldset>
 
