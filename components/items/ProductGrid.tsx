@@ -1,5 +1,6 @@
 import Item from "./Item";
 import type { Product } from "@/lib/products";
+import { productImages } from "@/lib/product-images";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   if (products.length === 0) {
@@ -16,7 +17,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
         <Item
           key={product.slug}
           href={`/produkty/${product.slug}`}
-          images={product.images}
+          images={productImages(product)}
           title={product.title}
           priceCents={product.priceCents}
           salePriceCents={product.salePriceCents}

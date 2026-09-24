@@ -5,6 +5,7 @@ import { getSizeChart } from "@/lib/size-charts";
 import PriceTag from "@/components/PriceTag";
 import AddToCart from "@/components/AddToCart";
 import Gallery from "@/components/product/Gallery";
+import { productImages } from "@/lib/product-images";
 
 export const revalidate = 3600;
 
@@ -40,7 +41,7 @@ export default async function ProductPage({ params }: Params) {
 
   return (
     <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-2">
-      <Gallery images={product.images} title={product.title} />
+      <Gallery images={productImages(product)} title={product.title} />
 
       <div className="md:sticky md:top-8 md:h-fit md:pt-8">
         {" "}

@@ -20,6 +20,9 @@ model Product {
   salePriceCents Int?
   description    String
   images         String[]
+  // Teksty alternatywne sparowane z images po indeksie — puste wpisy zastępuje
+  // opis wyliczony z tytułu (lib/product-images.ts).
+  imageAlts      String[]         @default([])
   sortOrder      Int              @default(0)
   sizeChartId    String?
   sizeChart      SizeChart?       @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)

@@ -3,9 +3,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import type { ProductImage } from "@/lib/product-images";
 
 type Props = {
-  images: string[];
+  images: ProductImage[];
   title: string;
 };
 
@@ -103,17 +104,17 @@ export default function Gallery({ images, title }: Props) {
           onScroll={onTrackScroll}
           className="flex snap-x snap-mandatory overflow-x-auto"
         >
-          {images.map((src, i) => (
+          {images.map((image, i) => (
             <button
               type="button"
-              key={src}
+              key={image.url}
               onClick={() => open(i)}
               className="relative aspect-square w-full flex-none snap-start bg-neutral-100"
               aria-label={`Powiększ zdjęcie ${i + 1}`}
             >
               <Image
-                src={src}
-                alt={i === 0 ? title : ""}
+                src={image.url}
+                alt={image.alt}
                 fill
                 priority={i === 0}
                 sizes="100vw"
@@ -125,9 +126,9 @@ export default function Gallery({ images, title }: Props) {
 
         {images.length > 1 && (
           <div className="mt-3 flex justify-center gap-1.5">
-            {images.map((src, i) => (
+            {images.map((image, i) => (
               <span
-                key={src}
+                key={image.url}
                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
                   i === active ? "bg-black" : "bg-black/20"
                 }`}
@@ -139,17 +140,17 @@ export default function Gallery({ images, title }: Props) {
 
       {/* desktop: kolumna zdjęć, klik powiększa */}
       <div className="hidden md:flex md:flex-col md:gap-2">
-        {images.map((src, i) => (
+        {images.map((image, i) => (
           <button
             type="button"
-            key={src}
+            key={image.url}
             onClick={() => open(i)}
             className="relative aspect-square w-full cursor-zoom-in bg-neutral-100"
             aria-label={`Powiększ zdjęcie ${i + 1}`}
           >
             <Image
-              src={src}
-              alt={i === 0 ? title : ""}
+              src={image.url}
+              alt={image.alt}
               fill
               priority={i === 0}
               sizes="50vw"
@@ -171,9 +172,9 @@ export default function Gallery({ images, title }: Props) {
             onScroll={onLightboxScroll}
             className="flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {images.map((src, i) => (
+            {images.map((image) => (
               <div
-                key={src}
+                key={image.url}
                 onClick={close}
                 className="flex h-full w-full flex-none snap-center items-center justify-center px-4 md:px-20"
               >
@@ -182,8 +183,8 @@ export default function Gallery({ images, title }: Props) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Image
-                    src={src}
-                    alt={`${title} — zdjęcie ${i + 1} z ${images.length}`}
+                    src={image.url}
+                    alt={image.alt}
                     fill
                     sizes="100vw"
                     className="object-contain"

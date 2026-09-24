@@ -11,9 +11,10 @@ type ProductFormProps = {
   sizeCharts: { id: string; name: string }[];
 };
 
-type ImageEntry =
-  | { kind: "existing"; id: string; url: string }
-  | { kind: "pending"; id: string; file: File; previewUrl: string };
+type ImageEntry = { id: string; alt: string } & (
+  | { kind: "existing"; url: string }
+  | { kind: "pending"; file: File; previewUrl: string }
+);
 
 type VariantRow = {
   id: string;
@@ -48,10 +49,11 @@ export default function ProductForm({
   );
   const [newSize, setNewSize] = useState("");
   const [images, setImages] = useState<ImageEntry[]>(
-    product?.images.map((url) => ({
+    product?.images.map((url, index) => ({
       kind: "existing" as const,
       id: url,
       url,
+      alt: product.imageAlts[index] ?? "",
     })) ?? [],
   );
   const [dragId, setDragId] = useState<string | null>(null);
@@ -85,8 +87,13 @@ export default function ProductForm({
       id: crypto.randomUUID(),
       file,
       previewUrl: URL.createObjectURL(file),
+      alt: "",
     }));
     setImages((prev) => [...prev, ...next]);
+  };
+
+  const updateAlt = (id: string, alt: string) => {
+    setImages((prev) => prev.map((i) => (i.id === id ? { ...i, alt } : i)));
   };
 
   const removeImage = (id: string) => {
@@ -147,9 +154,11 @@ export default function ProductForm({
 
     const formData = new FormData(formRef.current);
     formData.delete("images");
-    for (const url of orderedUrls) {
+    formData.delete("imageAlts");
+    orderedUrls.forEach((url, index) => {
       formData.append("images", url);
-    }
+      formData.append("imageAlts", images[index].alt.trim());
+    });
 
     // Od tego miejsca nie łapiemy błędów — createProduct/updateProduct kończą
     // się redirectem, który celowo musi przelecieć dalej, nie zostać złapany.
@@ -316,70 +325,96 @@ export default function ProductForm({
         </label>
         <p className="text-xs text-black/40">
           Kolejność zmienisz przeciąganiem, a na telefonie strzałkami. Pierwsze
-          zdjęcie jest głównym.
+          zdjęcie jest głównym. Opis obok zdjęcia trafia do atrybutu alt — czyta
+          go czytnik ekranu i wyszukiwarka grafiki.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3">
           {images.map((entry, index) => (
             <div
               key={entry.id}
-              draggable
-              onDragStart={() => setDragId(entry.id)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
                 if (dragId) moveImage(dragId, entry.id);
                 setDragId(null);
               }}
-              className="relative h-24 w-24 cursor-grab overflow-hidden border border-black/10 active:cursor-grabbing"
+              className="flex items-start gap-3"
             >
-              {entry.kind === "existing" ? (
-                <Image
-                  src={entry.url}
-                  alt=""
-                  fill
-                  sizes="96px"
-                  className="pointer-events-none object-cover"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element -- lokalny podgląd z blob: URL, nie z Vercel Image Optimization
-                <img
-                  src={entry.previewUrl}
-                  alt=""
-                  className="pointer-events-none h-full w-full object-cover"
-                />
-              )}
-              {entry.kind === "pending" && (
-                <span className="absolute right-1 bottom-1 bg-black/70 px-1.5 py-0.5 text-[10px] text-white uppercase">
-                  Nowe
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => removeImage(entry.id)}
-                aria-label="Usuń zdjęcie"
-                className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center bg-black text-xs text-white"
+              {/* Przeciągalny jest sam kafelek, nie cały wiersz — inaczej nie
+                  dałoby się zaznaczyć tekstu w polu opisu. */}
+              <div
+                draggable
+                onDragStart={() => setDragId(entry.id)}
+                className="relative h-24 w-24 shrink-0 cursor-grab overflow-hidden border border-black/10 active:cursor-grabbing"
               >
-                ×
-              </button>
-              <div className="absolute bottom-1 left-1 flex gap-1 sm:hidden">
+                {entry.kind === "existing" ? (
+                  <Image
+                    src={entry.url}
+                    alt=""
+                    fill
+                    sizes="96px"
+                    className="pointer-events-none object-cover"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element -- lokalny podgląd z blob: URL, nie z Vercel Image Optimization
+                  <img
+                    src={entry.previewUrl}
+                    alt=""
+                    className="pointer-events-none h-full w-full object-cover"
+                  />
+                )}
+                {entry.kind === "pending" && (
+                  <span className="absolute right-1 bottom-1 bg-black/70 px-1.5 py-0.5 text-[10px] text-white uppercase">
+                    Nowe
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => shiftImage(index, -1)}
-                  disabled={index === 0}
-                  aria-label="Przesuń zdjęcie wcześniej"
-                  className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
+                  onClick={() => removeImage(entry.id)}
+                  aria-label="Usuń zdjęcie"
+                  className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center bg-black text-xs text-white"
                 >
-                  ‹
+                  ×
                 </button>
-                <button
-                  type="button"
-                  onClick={() => shiftImage(index, 1)}
-                  disabled={index === images.length - 1}
-                  aria-label="Przesuń zdjęcie później"
-                  className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
-                >
-                  ›
-                </button>
+                <div className="absolute bottom-1 left-1 flex gap-1 sm:hidden">
+                  <button
+                    type="button"
+                    onClick={() => shiftImage(index, -1)}
+                    disabled={index === 0}
+                    aria-label="Przesuń zdjęcie wcześniej"
+                    className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => shiftImage(index, 1)}
+                    disabled={index === images.length - 1}
+                    aria-label="Przesuń zdjęcie później"
+                    className="flex h-6 w-6 items-center justify-center bg-black/70 text-xs text-white disabled:opacity-30"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <input
+                  value={entry.alt}
+                  onChange={(e) => updateAlt(entry.id, e.target.value)}
+                  placeholder={
+                    index === 0
+                      ? `np. ${title || "Nazwa produktu"} — przód`
+                      : "np. zbliżenie na haft na rękawie"
+                  }
+                  aria-label={`Opis zdjęcia ${index + 1}`}
+                  maxLength={125}
+                  className="w-full border border-black/20 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                />
+                <span className="text-[11px] text-black/35">
+                  Opis alternatywny — {index === 0 ? "główne zdjęcie, " : ""}
+                  puste pole zastąpimy tytułem produktu.
+                </span>
               </div>
             </div>
           ))}

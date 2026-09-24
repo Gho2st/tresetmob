@@ -18,7 +18,18 @@ function readProductFields(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const priceCents = parseCents(formData.get("price"));
   const salePriceCents = parseCents(formData.get("salePrice"));
-  const images = formData.getAll("images").map(String).filter(Boolean);
+  // Adresy i opisy przychodzą jako dwie równoległe listy — parujemy je przed
+  // odsianiem pustych wpisów, żeby opis nie przesunął się na inne zdjęcie.
+  const altValues = formData.getAll("imageAlts").map(String);
+  const imageEntries = formData
+    .getAll("images")
+    .map((value, index) => ({
+      url: String(value).trim(),
+      alt: (altValues[index] ?? "").trim(),
+    }))
+    .filter((entry) => entry.url.length > 0);
+  const images = imageEntries.map((entry) => entry.url);
+  const imageAlts = imageEntries.map((entry) => entry.alt);
   const sizeChartId = String(formData.get("sizeChartId") ?? "").trim() || null;
 
   const variantSizes = formData.getAll("variantSize").map(String);
@@ -56,6 +67,7 @@ function readProductFields(formData: FormData) {
     priceCents,
     salePriceCents,
     images,
+    imageAlts,
     sizeChartId,
     variants,
   };

@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import PriceTag from "@/components/PriceTag";
+import type { ProductImage } from "@/lib/product-images";
 
 type ItemProps = {
-  images: string[];
+  images: ProductImage[];
   title: string;
   priceCents: number;
   salePriceCents?: number | null;
@@ -23,15 +24,15 @@ export default function Item({
     <Link href={href} className="group block w-full">
       <div className="relative aspect-3/4 w-full overflow-hidden bg-neutral-100">
         <Image
-          src={main}
-          alt={title}
+          src={main.url}
+          alt={main.alt}
           fill
           sizes="(max-width: 639px) 45vw, (max-width: 1279px) 30vw, (max-width: 1535px) 22vw, 28vw"
           className="object-contain transition-opacity duration-500 group-hover:opacity-0"
         />
         {hover && (
           <Image
-            src={hover}
+            src={hover.url}
             alt=""
             aria-hidden
             fill
