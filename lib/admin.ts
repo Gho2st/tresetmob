@@ -2,17 +2,8 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
-function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-export function isAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  return adminEmails().includes(email.toLowerCase());
-}
+export { isAdminEmail, verifyAdminCredentials } from "@/lib/admin-credentials";
+import { isAdminEmail } from "@/lib/admin-credentials";
 
 /**
  * Sprawdza sesję i uprawnienia admina. Wywoływane w app/admin/layout.tsx

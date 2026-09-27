@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
+import Credentials from "next-auth/providers/credentials";
+import { verifyAdminCredentials } from "@/lib/admin-credentials";
 
 // Provider bez kluczy wywala się dopiero w momencie kliknięcia przycisku, więc
 // dokładamy Facebooka tylko wtedy, gdy jest skonfigurowany. Strona logowania
@@ -29,6 +31,24 @@ export const {
           }),
         ]
       : []),
+    // Logowanie e-mail+hasło TYLKO dla admina (ADMIN_EMAILS + ADMIN_CREDENTIALS) —
+    // klienci sklepu logują się wyłącznie przez OAuth, patrz app/(site)/logowanie.
+    Credentials({
+      credentials: {
+        email: { label: "E-mail", type: "email" },
+        password: { label: "Hasło", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = String(credentials?.email ?? "").trim().toLowerCase();
+        const password = String(credentials?.password ?? "");
+        if (!email || !password) return null;
+
+        const valid = await verifyAdminCredentials(email, password);
+        if (!valid) return null;
+
+        return { id: email, email };
+      },
+    }),
   ],
   session: { strategy: "jwt" },
   callbacks: {
