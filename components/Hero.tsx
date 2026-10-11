@@ -27,11 +27,14 @@ export default async function Hero() {
         />
       )}
 
+      {/* Przezroczysty przycisk ginie na jasnym kadrze, więc lekko przyciemniamy tło. */}
+      <div className="absolute inset-0 bg-black/25" />
+
       <div className="absolute inset-0 z-10 flex items-center justify-center">
         <Link
           href="/sklep"
-          className="bg-white text-black px-8 py-3 text-sm font-semibold tracking-wider
-                     hover:bg-black hover:text-white transition-colors"
+          className="border border-white bg-transparent text-white px-8 py-3 text-sm font-semibold tracking-wider
+                     hover:bg-white hover:text-black transition-colors"
         >
           SHOP NOW
         </Link>

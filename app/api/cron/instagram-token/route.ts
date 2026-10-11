@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { refreshStoredInstagramToken } from "@/lib/instagram";
 
 // Token Instagrama żyje 60 dni i każde odświeżenie liczy ten okres od nowa,
-// więc cron chodzi codziennie — jedno nieudane wywołanie nic nie psuje, a przy
-// awarii zostaje prawie dwa miesiące zapasu na reakcję.
+// więc cron chodzi raz w tygodniu — nawet kilka nieudanych wywołań z rzędu
+// zostawia ponad miesiąc zapasu na reakcję.
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
