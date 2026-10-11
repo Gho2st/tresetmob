@@ -1,26 +1,35 @@
 import Image from "next/image";
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
 import { SocialIcon } from "@/components/SocialIcons";
+import { getLatestInstagramPost } from "@/lib/instagram";
 
 const DESCRIPTIONS = {
   instagram: "Świeże kadry i nowości",
   tiktok: "Kulisy i krótkie filmy",
 } as const;
 
-export default function Insta() {
+export default async function Insta() {
+  // Brak tokenu, wygasły token albo awaria API dają null — wtedy zostaje kadr
+  // z repozytorium i sekcja wygląda dokładnie jak przedtem.
+  const post = await getLatestInstagramPost();
+
   return (
     <section
       aria-labelledby="social-heading"
-      className="xl:my-24 mx-auto flex w-full max-w-[1280px] flex-col bg-black text-white lg:h-[62vh] lg:max-h-[560px] lg:min-h-[420px] lg:flex-row 2xl:max-w-[1440px] 2xl:max-h-[620px]"
+      className="xl:my-24 mx-auto flex w-full max-w-[1280px] flex-col bg-black text-white lg:min-h-[420px] lg:flex-row 2xl:max-w-[1440px]"
     >
       {/* ---------- zdjęcie ---------- */}
-      <figure className="group relative m-0 aspect-[3/2] w-full overflow-hidden lg:aspect-auto lg:h-full lg:w-[54%] 2xl:w-[58%]">
+      <figure className="group relative m-0 aspect-square w-full overflow-hidden lg:aspect-auto lg:w-[54%] lg:self-stretch 2xl:w-[58%]">
         <Image
-          src="/insta.png"
-          alt="Kadr z profilu @tresetmob"
+          src={post?.imageUrl ?? "/insta.png"}
+          alt={
+            post
+              ? `Najnowszy post z profilu @${SOCIAL_HANDLE}`
+              : "Kadr z profilu @tresetmob"
+          }
           fill
           sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 54vw, 58vw"
-          className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
+          className="object-contain"
           priority
         />
 
@@ -30,19 +39,21 @@ export default function Insta() {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/25 to-transparent"
         />
 
-        <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-4 sm:p-5">
+        {/* Kadr prowadzi na konkretny post tylko wtedy, gdy mamy go z API —
+            link do zdjęcia z repozytorium nie miałby celu. */}
+        {post && (
+          <a
+            href={post.permalink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Zobacz najnowszy post na Instagramie"
+            className="absolute inset-0 z-10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
+          />
+        )}
+
+        <figcaption className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-6 p-4 sm:p-5">
           <span className="font-bebas text-lg leading-none tracking-wide">
             @{SOCIAL_HANDLE}
-          </span>
-          <span className="flex items-center gap-2.5 text-white/70">
-            {SOCIAL_LINKS.map((social) => (
-              <SocialIcon
-                key={social.id}
-                id={social.id}
-                className="h-3.5 w-3.5"
-                aria-hidden="true"
-              />
-            ))}
           </span>
         </figcaption>
       </figure>
@@ -70,10 +81,27 @@ export default function Insta() {
               </span>
             </h2>
 
-            <p className="max-w-[36ch] text-[0.78rem] leading-[1.65] text-white/55">
-              Zdjęcia z ostatnich sesji lecą na Instagram, a wszystko, co dzieje
-              się obok kadru, trafia na TikToka.
-            </p>
+            {post?.caption ? (
+              <div className="flex flex-col gap-2">
+                {/* Opisy na Instagramie bywają bardzo długie, więc przycinamy
+                    je do dwóch linii — całość jest klik dalej, na poście. */}
+                <p className="line-clamp-2 max-w-[36ch] text-[0.78rem] leading-[1.65] text-white/55">
+                  {post.caption}
+                </p>
+                <span className="text-[0.65rem] tracking-[0.2em] text-white/30 uppercase">
+                  {new Date(post.timestamp).toLocaleDateString("pl-PL", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+            ) : (
+              <p className="max-w-[36ch] text-[0.78rem] leading-[1.65] text-white/55">
+                Zdjęcia z ostatnich sesji lecą na Instagram, a wszystko, co
+                dzieje się obok kadru, trafia na TikToka.
+              </p>
+            )}
           </div>
 
           {/* na mobile lista idzie na pełną szerokość, na desktopie

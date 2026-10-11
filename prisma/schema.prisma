@@ -41,13 +41,24 @@ model ProductVariant {
   @@unique([productId, size])
 }
 
-// Jeden wiersz (id zawsze "singleton") — ustawienia baneru Hero na stronie głównej.
+// Pojedyncze grafiki redakcyjne, każda pod własnym id: "singleton" to baner Hero
+// na stronie głównej, "login" to zdjęcie przy formularzu logowania (lib/hero.ts).
 model Hero {
   id     String  @id @default("singleton")
   type   String // "image" | "video"
   src    String
   alt    String?
   poster String?
+}
+
+// Token do API Instagrama. Leży w bazie, a nie w zmiennej środowiskowej, bo
+// żyje 60 dni i cron musi móc wpisać na jego miejsce nowy — procesowi nie wolno
+// nadpisać własnego env.
+model InstagramToken {
+  id        String   @id @default("singleton")
+  token     String
+  expiresAt DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model Order {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { signIn, FACEBOOK_ENABLED } from "@/auth";
+import { getLoginImage } from "@/lib/hero";
 
 const providerButton =
   "group inline-flex w-full items-center justify-center gap-3 border border-black/30 px-6 py-4 text-sm tracking-[0.15em] transition-colors hover:border-black hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black";
@@ -11,14 +12,15 @@ export default async function Logowanie({
   searchParams: Promise<{ blad?: string }>;
 }) {
   const { blad } = await searchParams;
+  const loginImage = await getLoginImage();
 
   return (
     <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col bg-white text-black lg:flex-row">
       {/* ---------- zdjęcie ---------- */}
       <div className="relative hidden h-64 w-full lg:block lg:h-auto lg:w-1/2">
         <Image
-          src="/hero.png"
-          alt=""
+          src={loginImage.src}
+          alt={loginImage.alt ?? ""}
           fill
           sizes="50vw"
           className="object-cover"

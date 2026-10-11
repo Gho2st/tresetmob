@@ -49,7 +49,10 @@ export default function Koszyk() {
               key={`${item.slug}-${item.size}`}
               className="flex gap-5 py-6 sm:gap-8"
             >
-              <div className="relative aspect-square w-24 shrink-0 bg-neutral-100 sm:w-32">
+              <Link
+                href={`/produkty/${item.slug}`}
+                className="relative block aspect-square w-24 shrink-0 bg-neutral-100 sm:w-32"
+              >
                 <Image
                   src={item.image}
                   alt={item.title}
@@ -57,13 +60,18 @@ export default function Koszyk() {
                   sizes="128px"
                   className="object-contain"
                 />
-              </div>
+              </Link>
 
               <div className="flex flex-1 flex-col justify-between gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-sm font-semibold uppercase tracking-wide">
-                      {item.title}
+                    <h2 className="text-sm font-semibold tracking-wide uppercase">
+                      <Link
+                        href={`/produkty/${item.slug}`}
+                        className="transition-colors hover:text-black/60 hover:underline underline-offset-4"
+                      >
+                        {item.title}
+                      </Link>
                     </h2>
                     <p className="mt-1 text-xs text-black/40">
                       Rozmiar {item.size}

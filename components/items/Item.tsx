@@ -22,7 +22,7 @@ export default function Item({
 
   return (
     <Link href={href} className="group block w-full">
-      <div className="relative aspect-3/4 w-full overflow-hidden bg-neutral-100">
+      <div className="relative aspect-3/4 w-full overflow-hidden">
         <Image
           src={main.url}
           alt={main.alt}
