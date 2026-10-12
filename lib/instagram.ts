@@ -15,6 +15,12 @@ export type InstagramPost = {
   timestamp: string;
 };
 
+export type TokenStatus = {
+  source: "baza" | "env" | "brak";
+  expiresAt: Date | null;
+  updatedAt: Date | null;
+};
+
 type MediaItem = {
   id: string;
   media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
@@ -50,10 +56,26 @@ async function resolveToken(): Promise<string | null> {
   return envToken();
 }
 
+export async function getTokenStatus(): Promise<TokenStatus> {
+  const row = await readStoredToken();
+  if (row) {
+    return {
+      source: "baza",
+      expiresAt: row.expiresAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+  return {
+    source: envToken() ? "env" : "brak",
+    expiresAt: null,
+    updatedAt: null,
+  };
+}
+
 /**
  * Przedłuża token o kolejne 60 dni i zapisuje nowy w bazie. Meta przyjmuje
  * wyłącznie token długoterminowy, który sam jeszcze nie wygasł — po wygaśnięciu
- * nie ma czego odświeżać i trzeba wkleić nowy z panelu Meta do INSTA_TOKEN.
+ * nie ma czego odświeżać i trzeba wkleić nowy z panelu Meta.
  */
 export async function refreshInstagramToken(token: string) {
   const url = new URL(`${GRAPH}/refresh_access_token`);
@@ -82,7 +104,8 @@ export async function refreshInstagramToken(token: string) {
 }
 
 /**
- * To samo, ale na tokenie leżącym w bazie — tak wywołuje to cron.
+ * To samo, ale na tokenie leżącym w bazie — tak wywołuje to cron i przycisk
+ * „Odśwież teraz" w panelu.
  */
 export async function refreshStoredInstagramToken() {
   const token = await resolveToken();
@@ -112,7 +135,9 @@ export async function getLatestInstagramPost(): Promise<InstagramPost | null> {
     url.searchParams.set("limit", "5");
     url.searchParams.set("access_token", token);
 
-    const response = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS } });
+    const response = await fetch(url, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
     if (!response.ok) return null;
 
     const body = (await response.json()) as { data?: MediaItem[] };
