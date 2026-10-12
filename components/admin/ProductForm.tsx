@@ -22,6 +22,8 @@ type VariantRow = {
   stock: string;
 };
 
+const toDateInput = (date: Date) => date.toISOString().slice(0, 10);
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -194,6 +196,22 @@ export default function ProductForm({
           }}
           className="border border-black/20 px-4 py-3 text-sm focus:border-black focus:outline-none"
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-xs tracking-widest text-black/40 uppercase">
+          Data premiery
+        </label>
+        <input
+          name="releasedAt"
+          required
+          type="date"
+          defaultValue={toDateInput(product?.releasedAt ?? new Date())}
+          className="border border-black/20 px-4 py-3 text-sm focus:border-black focus:outline-none"
+        />
+        <span className="text-xs text-black/40">
+          Po tej dacie sortuje „Najnowsze” w sklepie.
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

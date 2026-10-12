@@ -62,7 +62,7 @@ export function filterAndSortProducts(products: Product[], params: CatalogParams
   // sort jest stabilny, więc przy remisach zostaje kolejność ustawiona w panelu admina
   switch (params.sort) {
     case "najnowsze":
-      return result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return result.sort((a, b) => b.releasedAt.getTime() - a.releasedAt.getTime());
     case "cena-rosnaco":
       return result.sort((a, b) => effectivePrice(a) - effectivePrice(b));
     case "cena-malejaco":

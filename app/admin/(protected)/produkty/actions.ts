@@ -13,12 +13,22 @@ function parseCents(raw: FormDataEntryValue | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+// Pole <input type="date"> daje "RRRR-MM-DD"; zapisujemy północ UTC, żeby ta
+// sama data wracała do formularza niezależnie od strefy czasowej serwera.
+function parseDate(raw: FormDataEntryValue | null): Date | null {
+  const trimmed = String(raw ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
+  const date = new Date(`${trimmed}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function readProductFields(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const priceCents = parseCents(formData.get("price"));
   const salePriceCents = parseCents(formData.get("salePrice"));
+  const releasedAt = parseDate(formData.get("releasedAt"));
   // Adresy i opisy przychodzą jako dwie równoległe listy — parujemy je przed
   // odsianiem pustych wpisów, żeby opis nie przesunął się na inne zdjęcie.
   const altValues = formData.getAll("imageAlts").map(String);
@@ -51,6 +61,9 @@ function readProductFields(formData: FormData) {
   if (salePriceCents !== null && (salePriceCents <= 0 || salePriceCents >= priceCents)) {
     throw new Error("Cena promocyjna musi być dodatnia i niższa od zwykłej ceny.");
   }
+  if (!releasedAt) {
+    throw new Error("Podaj datę premiery.");
+  }
   if (images.length === 0) {
     throw new Error("Dodaj co najmniej jedno zdjęcie.");
   }
@@ -67,6 +80,7 @@ function readProductFields(formData: FormData) {
     description,
     priceCents,
     salePriceCents,
+    releasedAt,
     images,
     imageAlts,
     sizeChartId,

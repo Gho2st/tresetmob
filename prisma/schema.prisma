@@ -24,6 +24,9 @@ model Product {
   // opis wyliczony z tytułu (lib/product-images.ts).
   imageAlts      String[]              @default([])
   sortOrder      Int                   @default(0)
+  // Data premiery ustawiana w panelu — po niej sortuje „Najnowsze”, bo
+  // createdAt to tylko moment dodania rekordu, nie wejścia rzeczy do sprzedaży.
+  releasedAt     DateTime              @default(now())
   sizeChartId    String?
   sizeChart      SizeChart?            @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
   variants       ProductVariant[]
