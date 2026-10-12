@@ -21,6 +21,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           title={product.title}
           priceCents={product.priceCents}
           salePriceCents={product.salePriceCents}
+          lowestPriceCents={product.lowestPriceCents}
         />
       ))}
     </div>

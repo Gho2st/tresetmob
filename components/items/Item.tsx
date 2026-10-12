@@ -8,6 +8,7 @@ type ItemProps = {
   title: string;
   priceCents: number;
   salePriceCents?: number | null;
+  lowestPriceCents?: number | null;
   href: string;
 };
 
@@ -16,6 +17,7 @@ export default function Item({
   title,
   priceCents,
   salePriceCents,
+  lowestPriceCents,
   href,
 }: ItemProps) {
   const [main, hover] = images;
@@ -48,6 +50,7 @@ export default function Item({
         <PriceTag
           priceCents={priceCents}
           salePriceCents={salePriceCents}
+          lowestPriceCents={lowestPriceCents}
           className="mt-3 block text-sm"
         />
       </div>

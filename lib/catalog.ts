@@ -1,4 +1,5 @@
 import type { Product } from "@/lib/products";
+import { effectivePriceCents as effectivePrice } from "@/lib/price-history";
 
 export const SORT_OPTIONS = [
   { value: "polecane", label: "Polecane" },
@@ -41,8 +42,6 @@ export function buildCatalogHref(pathname: string, params: CatalogParams) {
   const query = search.toString();
   return query ? `${pathname}?${query}` : pathname;
 }
-
-const effectivePrice = (p: Product) => p.salePriceCents ?? p.priceCents;
 
 export function filterAndSortProducts(products: Product[], params: CatalogParams) {
   const query = params.q?.toLowerCase();

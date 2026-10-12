@@ -7,7 +7,7 @@ import { uploadProductImage } from "./actions";
 
 type ProductFormProps = {
   action: (formData: FormData) => void | Promise<void>;
-  product?: Product;
+  product?: Omit<Product, "lowestPriceCents">;
   sizeCharts: { id: string; name: string }[];
 };
 

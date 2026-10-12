@@ -51,6 +51,7 @@ export default async function ProductPage({ params }: Params) {
         <PriceTag
           priceCents={product.priceCents}
           salePriceCents={product.salePriceCents}
+          lowestPriceCents={product.lowestPriceCents}
           className="mt-3 block text-sm"
         />
         <p className="mt-8 text-sm leading-relaxed text-neutral-600">

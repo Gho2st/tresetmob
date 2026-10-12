@@ -87,6 +87,7 @@ export default async function AdminProdukty() {
                   <PriceTag
                     priceCents={product.priceCents}
                     salePriceCents={product.salePriceCents}
+                    lowestPriceCents={product.lowestPriceCents}
                   />
                   <span>
                     · {totalStock} szt. w {product.variants.length} rozmiarach

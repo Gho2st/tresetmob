@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { effectivePriceCents } from "@/lib/price-history";
 
 function parseCents(raw: FormDataEntryValue | null): number | null {
   const trimmed = String(raw ?? "").trim();
@@ -87,7 +88,11 @@ export async function createProduct(formData: FormData) {
   const { variants, ...data } = readProductFields(formData);
 
   await prisma.product.create({
-    data: { ...data, variants: { create: variants } },
+    data: {
+      ...data,
+      variants: { create: variants },
+      priceHistory: { create: { priceCents: effectivePriceCents(data) } },
+    },
   });
   revalidateCatalog(data.slug);
   redirect("/admin/produkty");
@@ -97,13 +102,28 @@ export async function updateProduct(id: string, formData: FormData) {
   await requireAdmin();
   const { variants, ...data } = readProductFields(formData);
 
+  // Do historii trafia tylko faktyczna zmiana ceny — zapis samego opisu czy
+  // stanów nie może wyglądać jak nowa obniżka.
+  const current = await prisma.product.findUnique({
+    where: { id },
+    select: { priceCents: true, salePriceCents: true },
+  });
+  const newPrice = effectivePriceCents(data);
+  const priceChanged = !current || effectivePriceCents(current) !== newPrice;
+
   // Warianty zastępowane w całości (usuń + utwórz od nowa) — prościej niż
   // diffowanie zmian rozmiar-po-rozmiarze, bezpieczne dzięki $transaction.
   await prisma.$transaction([
     prisma.productVariant.deleteMany({ where: { productId: id } }),
     prisma.product.update({
       where: { id },
-      data: { ...data, variants: { create: variants } },
+      data: {
+        ...data,
+        variants: { create: variants },
+        ...(priceChanged && {
+          priceHistory: { create: { priceCents: newPrice } },
+        }),
+      },
     }),
   ]);
   revalidateCatalog(data.slug);

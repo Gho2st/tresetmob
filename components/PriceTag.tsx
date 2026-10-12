@@ -3,12 +3,15 @@ import { formatPrice } from "@/lib/cart";
 type PriceTagProps = {
   priceCents: number;
   salePriceCents?: number | null;
+  /** Najniższa cena z 30 dni przed obniżką — patrz lib/price-history.ts. */
+  lowestPriceCents?: number | null;
   className?: string;
 };
 
 export default function PriceTag({
   priceCents,
   salePriceCents,
+  lowestPriceCents,
   className = "",
 }: PriceTagProps) {
   const onSale = salePriceCents != null && salePriceCents < priceCents;
@@ -22,6 +25,12 @@ export default function PriceTag({
       <span className="inline-flex items-center gap-2">
         <span className="text-black/40 line-through">{formatPrice(priceCents)}</span>
         <span className="text-red-600">{formatPrice(salePriceCents)}</span>
+      </span>
+      {/* Omnibus: przy każdej obniżce musi stać najniższa cena z 30 dni przed
+          nią. Gdy historia jej nie zna, jedyną znaną ceną jest obecna. */}
+      <span className="mt-1 block text-xs text-black/40">
+        Najniższa cena z 30 dni przed obniżką:{" "}
+        {formatPrice(lowestPriceCents ?? salePriceCents)}
       </span>
     </span>
   );

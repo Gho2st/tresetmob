@@ -13,8 +13,8 @@ datasource db {
 }
 
 model Product {
-  id             String           @id @default(cuid())
-  slug           String           @unique
+  id             String                @id @default(cuid())
+  slug           String                @unique
   title          String
   priceCents     Int
   salePriceCents Int?
@@ -22,13 +22,14 @@ model Product {
   images         String[]
   // Teksty alternatywne sparowane z images po indeksie — puste wpisy zastępuje
   // opis wyliczony z tytułu (lib/product-images.ts).
-  imageAlts      String[]         @default([])
-  sortOrder      Int              @default(0)
+  imageAlts      String[]              @default([])
+  sortOrder      Int                   @default(0)
   sizeChartId    String?
-  sizeChart      SizeChart?       @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
+  sizeChart      SizeChart?            @relation(fields: [sizeChartId], references: [id], onDelete: SetNull)
   variants       ProductVariant[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  priceHistory   ProductPriceHistory[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 }
 
 model ProductVariant {
@@ -39,6 +40,19 @@ model ProductVariant {
   productId String
 
   @@unique([productId, size])
+}
+
+// Cena, po której produkt faktycznie był sprzedawany (promocyjna, jeśli była),
+// zapisywana przy każdej jej zmianie. Z tego liczymy najniższą cenę z 30 dni
+// przed obniżką, którą wymaga dyrektywa Omnibus (lib/price-history.ts).
+model ProductPriceHistory {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  priceCents Int
+  createdAt  DateTime @default(now())
+
+  @@index([productId, createdAt])
 }
 
 // Pojedyncze grafiki redakcyjne, każda pod własnym id: "singleton" to baner Hero
