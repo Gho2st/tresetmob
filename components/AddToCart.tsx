@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
 import type { Product } from "@/lib/products";
 import SizeChart from "@/components/product/SizeChart";
@@ -16,6 +17,9 @@ export default function AddToCart({
   const { addItem } = useCart();
   const [size, setSize] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  // „Dodano” na przycisku gaśnie po chwili, a link do koszyka zostaje — klient
+  // może najpierw spokojnie obejrzeć resztę strony.
+  const [inCart, setInCart] = useState(false);
 
   const inStock = product.variants.some((v) => v.stock > 0);
   const effectivePriceCents = product.salePriceCents ?? product.priceCents;
@@ -30,6 +34,7 @@ export default function AddToCart({
       size,
     });
     setAdded(true);
+    setInCart(true);
     window.setTimeout(() => setAdded(false), 1500);
   };
 
@@ -75,6 +80,15 @@ export default function AddToCart({
         <p className="mt-8 w-full border border-black/20 py-4 text-center text-sm tracking-wide text-black/50 uppercase">
           Brak w magazynie
         </p>
+      )}
+
+      {inCart && (
+        <Link
+          href="/koszyk"
+          className="mt-3 block w-full border border-black py-4 text-center text-sm tracking-wide uppercase transition-colors hover:bg-black hover:text-white"
+        >
+          Przejdź do koszyka
+        </Link>
       )}
     </>
   );
