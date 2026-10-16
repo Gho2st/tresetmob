@@ -32,7 +32,7 @@ export default async function AdminLogin({ searchParams }: Props) {
     <section className="flex min-h-screen w-full flex-col items-center justify-center gap-8 bg-white px-6 text-center text-black">
       <div className="flex flex-col gap-3">
         <span className="text-xs tracking-[0.3em] text-black/40">ADMIN</span>
-        <h1 className="font-bebas text-4xl tracking-tight uppercase sm:text-5xl">
+        <h1 className="font-display text-4xl tracking-tight uppercase sm:text-5xl">
           Panel administracyjny
         </h1>
         <p className="text-sm text-black/50">

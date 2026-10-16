@@ -52,7 +52,7 @@ export default async function Insta() {
         )}
 
         <figcaption className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-6 p-4 sm:p-5">
-          <span className="font-bebas text-lg leading-none tracking-wide">
+          <span className="font-display text-lg leading-none tracking-wide">
             @{SOCIAL_HANDLE}
           </span>
         </figcaption>
@@ -69,7 +69,7 @@ export default async function Insta() {
             </div>
             <h2
               id="social-heading"
-              className="font-bebas text-[clamp(1.875rem,2.6vw,3rem)] uppercase leading-[0.9] tracking-[-0.01em]"
+              className="font-display text-[clamp(1.875rem,2.6vw,3rem)] uppercase leading-[0.9] tracking-[-0.01em]"
             >
               <span className="block">Reszta</span>
               <span className="block">dzieje się</span>
@@ -128,7 +128,7 @@ export default async function Insta() {
                   />
 
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="font-bebas text-base leading-none tracking-wide 2xl:text-lg">
+                    <span className="font-display text-base leading-none tracking-wide 2xl:text-lg">
                       {social.label}
                     </span>
                     <span className="mt-1 truncate text-[0.68rem] text-white/45 transition-colors duration-300 group-hover/link:text-black/55">

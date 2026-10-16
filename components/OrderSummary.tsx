@@ -1,36 +1,31 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { formatPrice, type CartItem } from "@/lib/cart";
 import { findDiscount, discountAmount as calcDiscountAmount } from "@/lib/discounts";
+import { SHOP_POLICY } from "@/lib/shop-policy";
 
 type OrderSummaryProps = {
   subtotal: number;
-  shippingLabel?: string;
   items?: CartItem[];
-  onTotalChange?: (total: number) => void;
+  // Tylko kod — kwotę rabatu i sumę i tak przelicza serwer przy składaniu zamówienia.
+  onDiscountChange?: (code: string | null) => void;
   children: ReactNode;
 };
 
 export default function OrderSummary({
   subtotal,
-  shippingLabel = "Obliczana przy kasie",
   items,
-  onTotalChange,
+  onDiscountChange,
   children,
 }: OrderSummaryProps) {
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<ReturnType<typeof findDiscount>>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const discount = applied ? calcDiscountAmount(subtotal, applied) : 0;
-  const total = Math.max(subtotal - discount, 0);
-
-  useEffect(() => {
-    onTotalChange?.(total);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total]);
+  const discount = applied ? Math.round(calcDiscountAmount(subtotal, applied)) : 0;
+  const total = Math.max(subtotal - discount, 0) + SHOP_POLICY.deliveryCostCents;
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +33,12 @@ export default function OrderSummary({
     if (!found) {
       setApplied(null);
       setError("Nieprawidłowy kod rabatowy");
+      onDiscountChange?.(null);
       return;
     }
     setApplied(found);
     setError(null);
+    onDiscountChange?.(found.code);
   };
 
   return (
@@ -116,7 +113,9 @@ export default function OrderSummary({
       )}
       <div className="flex items-center justify-between text-sm">
         <span className="text-black/50">Dostawa</span>
-        <span className="text-black/50">{shippingLabel}</span>
+        <span className="text-black/50">
+          {formatPrice(SHOP_POLICY.deliveryCostCents)}
+        </span>
       </div>
 
       <div className="flex items-center justify-between border-t border-black/10 pt-6 text-sm font-semibold">

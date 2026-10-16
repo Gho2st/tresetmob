@@ -36,7 +36,7 @@ export default async function PotwierdzeniePlatnosci({ searchParams }: Props) {
   return (
     <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
       <span className="text-xs tracking-[0.3em] text-black/40">{eyebrow}</span>
-      <h1 className="font-bebas text-5xl uppercase tracking-tight">{title}</h1>
+      <h1 className="font-display text-5xl uppercase tracking-tight">{title}</h1>
       <p className="max-w-sm text-sm leading-relaxed text-black/50">
         {order && (
           <>

@@ -22,6 +22,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           priceCents={product.priceCents}
           salePriceCents={product.salePriceCents}
           lowestPriceCents={product.lowestPriceCents}
+          soldOut={!product.variants.some((v) => v.stock > 0)}
         />
       ))}
     </div>

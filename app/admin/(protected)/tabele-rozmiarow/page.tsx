@@ -10,7 +10,7 @@ export default async function TabeleRozmiarow() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">
+        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
           Tabele rozmiarów
         </h1>
         <Link

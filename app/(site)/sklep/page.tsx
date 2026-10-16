@@ -21,7 +21,7 @@ export default async function Sklep({ searchParams }: Props) {
       <div className="mb-10 flex flex-col gap-3">
         <span className="text-xs tracking-[0.3em] text-black/40">KOLEKCJE</span>
         <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h1 className="font-bebas text-5xl uppercase tracking-tight sm:text-6xl">
+          <h1 className="font-display text-5xl uppercase tracking-tight sm:text-6xl">
             {params.q ? `Wyniki dla „${params.q}”` : "Wszystkie produkty"}
           </h1>
           <span className="text-sm text-black/40">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import FaqAccordion from "@/components/FaqAccordion";
 import { CONTACT } from "@/lib/contact";
+import { formatPrice } from "@/lib/cart";
 import { SHOP_POLICY } from "@/lib/shop-policy";
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
 
@@ -34,8 +35,7 @@ const CATEGORIES = [
     items: [
       {
         question: "Ile kosztuje dostawa?",
-        answer:
-          "Dostawa jest bezpłatna — niezależnie od wybranej metody (kurier InPost lub Paczkomat InPost) i wartości zamówienia.",
+        answer: `Dostawa kosztuje ${formatPrice(SHOP_POLICY.deliveryCostCents)} — niezależnie od wybranej metody (kurier InPost lub Paczkomat InPost).`,
       },
       {
         question: "Ile trwa realizacja i dostawa zamówienia?",
@@ -103,7 +103,7 @@ export default function CentrumPomocy() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           OBSŁUGA
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Centrum pomocy
         </h1>
         <p className="text-sm text-black/50">

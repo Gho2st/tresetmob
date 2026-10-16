@@ -25,7 +25,7 @@ export default function Zwroty() {
     <section className="mx-auto flex w-full max-w-3xl flex-col gap-14 bg-white px-6 py-16 text-black sm:px-12 lg:px-0 lg:py-24">
       <div className="flex flex-col gap-3">
         <span className="text-xs tracking-[0.3em] text-black/40">OBSŁUGA</span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Zwroty i reklamacje
         </h1>
       </div>
@@ -33,7 +33,7 @@ export default function Zwroty() {
       <div className="grid grid-cols-1 divide-y divide-black/10 border border-black/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {FACTS.map((fact) => (
           <div key={fact.label} className="flex flex-col gap-1 p-6">
-            <span className="font-bebas text-3xl uppercase tracking-tight">
+            <span className="font-display text-3xl uppercase tracking-tight">
               {fact.value}
             </span>
             <span className="text-xs text-black/50">{fact.label}</span>
@@ -48,7 +48,7 @@ export default function Zwroty() {
 
         <ol className="flex flex-col divide-y divide-black/10 border-y border-black/10">
           <li className="flex gap-6 py-6">
-            <span className="font-bebas text-2xl leading-none text-black/30">01</span>
+            <span className="font-display text-2xl leading-none text-black/30">01</span>
             <div className="flex flex-col gap-4">
               <p className="text-sm leading-relaxed font-semibold text-black">
                 Pobierz i wypełnij formularz zwrotu.
@@ -66,18 +66,17 @@ export default function Zwroty() {
           </li>
 
           <li className="flex gap-6 py-6">
-            <span className="font-bebas text-2xl leading-none text-black/30">02</span>
+            <span className="font-display text-2xl leading-none text-black/30">02</span>
             <p className="text-sm leading-relaxed text-black/70">
               <span className="font-semibold text-black">
-                Zapakuj produkty starannie i dołącz formularz oraz dowód zakupu
-                (paragon lub fakturę).
+                Zapakuj produkty starannie i dołącz formularz.
               </span>{" "}
               Zwracane produkty nie mogą nosić śladów użytkowania.
             </p>
           </li>
 
           <li className="flex gap-6 py-6">
-            <span className="font-bebas text-2xl leading-none text-black/30">03</span>
+            <span className="font-display text-2xl leading-none text-black/30">03</span>
             <div className="flex w-full flex-col gap-4">
               <p className="text-sm leading-relaxed text-black/70">
                 <span className="font-semibold text-black">

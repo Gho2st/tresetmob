@@ -17,7 +17,7 @@ export default async function AdminLayout({
       <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-black/10 px-4 py-3 sm:h-14 sm:flex-nowrap sm:gap-x-8 sm:py-0 md:px-6">
         <Link
           href="/admin/produkty"
-          className="order-1 font-bebas text-xl tracking-wider"
+          className="order-1 font-display text-xl tracking-wider"
         >
           Tresetmob — Admin
         </Link>

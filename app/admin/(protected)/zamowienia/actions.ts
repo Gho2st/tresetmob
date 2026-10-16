@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { ORDER_STATUSES } from "@/lib/order-status";
@@ -20,5 +21,6 @@ export async function updateOrderStatus(id: string, status: string) {
   revalidatePath("/admin/zamowienia");
   revalidatePath("/konto/zamowienia");
 
-  await sendOrderStatusEmail(order);
+  // Select w panelu nie czeka na serwer SMTP — mail idzie po odpowiedzi.
+  after(() => sendOrderStatusEmail(order));
 }

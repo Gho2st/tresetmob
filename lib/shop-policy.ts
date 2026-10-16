@@ -8,5 +8,7 @@ export const SHOP_POLICY = {
   complaintResponseDays: 14,
   complaintYears: 2,
   dispatchWorkdays: 3,
-  sizeToleranceCm: 3,
+  sizeToleranceCm: 1,
+  // Stała stawka, niezależna od metody dostawy (kurier InPost / Paczkomat InPost).
+  deliveryCostCents: 1699,
 };

@@ -35,7 +35,7 @@ export default async function Logowanie({
             <span className="text-xs tracking-[0.3em] text-black/40">
               LOGOWANIE
             </span>
-            <h1 className="font-bebas text-5xl uppercase leading-[0.9] tracking-tight">
+            <h1 className="font-display text-5xl uppercase leading-[0.9] tracking-tight">
               Witaj
               <br />z powrotem
             </h1>

@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
-import { formatPrice } from "@/lib/cart";
 import {
   formatInPostPoint,
   type InPostPoint,
@@ -17,25 +16,15 @@ const DELIVERY_METHODS = [
   { id: "paczkomat", label: "Paczkomat InPost" },
 ] as const;
 
-const PAYMENT_METHODS = [
-  { id: "przelewy24", label: "Przelewy24" },
-  { id: "stripe", label: "Stripe" },
-  { id: "hotpay", label: "HotPay" },
-];
-
 export default function Kasa() {
   const { items, subtotal, clear } = useCart();
   const formRef = useRef<HTMLFormElement>(null);
   const [delivery, setDelivery] =
     useState<(typeof DELIVERY_METHODS)[number]["id"]>("kurier");
   const [point, setPoint] = useState<InPostPoint | null>(null);
-  const [payment, setPayment] = useState(PAYMENT_METHODS[0].id);
-  const [total, setTotal] = useState(subtotal);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [order, setOrder] = useState<{ number: string; total: number } | null>(
-    null,
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,67 +51,34 @@ export default function Kasa() {
         postalCode: String(formData.get("postalCode") ?? ""),
         city: String(formData.get("city") ?? ""),
         inpostPoint: point ? formatInPostPoint(point) : "",
-        paymentMethod: payment,
         acceptedTerms: formData.get("acceptTerms") === "on",
-        items,
-        subtotalCents: subtotal,
-        totalCents: total,
+        items: items.map(({ slug, size, quantity }) => ({ slug, size, quantity })),
+        discountCode,
       });
 
-      if (result.redirectUrl) {
-        // Zamówienie już zapisane w bazie (ze statusem płatności "oczekuje") —
-        // koszyk czyścimy przed przejściem do bramki, tak jak dla innych metod.
-        clear();
-        window.location.href = result.redirectUrl;
+      if ("error" in result) {
+        setError(result.error);
+        setSubmitting(false);
         return;
       }
 
-      setOrder({ number: result.number, total });
+      // Zamówienie jest już w bazie (płatność "oczekuje") — koszyk czyścimy
+      // przed przejściem do bramki; dalej prowadzi /kasa/potwierdzenie.
       clear();
+      window.location.href = result.redirectUrl;
     } catch {
       setError("Nie udało się złożyć zamówienia. Spróbuj ponownie.");
-    } finally {
       setSubmitting(false);
     }
   };
 
-  if (order) {
-    return (
-      <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
-        <span className="text-xs tracking-[0.3em] text-black/40">
-          ZAMÓWIENIE ZŁOŻONE
-        </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
-          Dziękujemy!
-        </h1>
-        <p className="max-w-sm text-sm leading-relaxed text-black/50">
-          Zamówienie <span className="text-black">{order.number}</span> na
-          kwotę <span className="text-black">{formatPrice(order.total)}</span>{" "}
-          zostało przyjęte. Potwierdzenie wysłaliśmy na podany adres e-mail.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/sklep"
-            className="inline-flex w-fit items-center gap-3 border border-black/30 px-7 py-4 text-sm tracking-[0.15em] transition-colors hover:border-black hover:bg-black hover:text-white"
-          >
-            WRÓĆ DO ZAKUPÓW
-          </Link>
-          <Link
-            href="/konto/zamowienia"
-            className="text-sm tracking-[0.15em] underline underline-offset-4 hover:text-black/60"
-          >
-            Zobacz moje zamówienia
-          </Link>
-        </div>
-      </section>
-    );
-  }
-
-  if (items.length === 0) {
+  // !submitting: po udanym złożeniu koszyk jest już pusty, a przeglądarka jeszcze
+  // przechodzi do bramki — bez tego mignąłby ekran "Koszyk jest pusty".
+  if (items.length === 0 && !submitting) {
     return (
       <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
         <span className="text-xs tracking-[0.3em] text-black/40">KASA</span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Koszyk jest pusty
         </h1>
         <p className="max-w-xs text-sm leading-relaxed text-black/50">
@@ -150,7 +106,7 @@ export default function Kasa() {
           <span className="text-xs tracking-[0.3em] text-black/40">
             KASA
           </span>
-          <h1 className="font-bebas text-5xl uppercase tracking-tight">
+          <h1 className="font-display text-5xl uppercase tracking-tight">
             Dane zamówienia
           </h1>
         </div>
@@ -260,26 +216,13 @@ export default function Kasa() {
           <legend className="mb-2 text-xs tracking-[0.3em] text-black/40">
             PŁATNOŚĆ
           </legend>
-          {PAYMENT_METHODS.map((method) => (
-            <label
-              key={method.id}
-              className={`flex cursor-pointer items-center gap-3 border px-4 py-3 text-sm transition-colors ${
-                payment === method.id
-                  ? "border-black"
-                  : "border-black/20 hover:border-black/40"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value={method.id}
-                checked={payment === method.id}
-                onChange={() => setPayment(method.id)}
-                className="accent-black"
-              />
-              {method.label}
-            </label>
-          ))}
+          <p className="border border-black px-4 py-3 text-sm">
+            Płatność online HotPay
+            <span className="mt-1 block text-xs text-black/50">
+              BLIK, szybki przelew lub karta — po kliknięciu „Zapłać i zamów”
+              przejdziesz do bezpiecznej strony płatności.
+            </span>
+          </p>
         </fieldset>
 
         <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-black/70">
@@ -314,9 +257,8 @@ export default function Kasa() {
       <div className="w-full shrink-0 lg:w-80">
         <OrderSummary
           subtotal={subtotal}
-          shippingLabel="Gratis"
           items={items}
-          onTotalChange={setTotal}
+          onDiscountChange={setDiscountCode}
         >
           <button
             type="submit"

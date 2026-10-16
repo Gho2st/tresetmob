@@ -64,7 +64,7 @@ export default function Polityka() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           INFORMACJE
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Polityka prywatności
         </h1>
       </div>

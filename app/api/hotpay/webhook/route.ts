@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifyHotpayNotification, type HotpayNotification } from "@/lib/hotpay";
@@ -21,14 +21,31 @@ export async function POST(request: Request) {
   }
 
   if (fields.STATUS === "SUCCESS") {
-    // HotPay może wysłać tę samą notyfikację ponownie — nie wysyłaj maila drugi raz.
-    if (order.paymentStatus !== "oplacone") {
-      const updated = await prisma.order.update({
-        where: { id: order.id },
+    const paid = await prisma.$transaction(async (tx) => {
+      // Warunkowy update zamiast sprawdzenia w JS — HotPay potrafi powtórzyć
+      // notyfikację, a dwie równoległe nie mogą obie zdjąć stanów i wysłać maila.
+      const { count } = await tx.order.updateMany({
+        where: { id: order.id, paymentStatus: { not: "oplacone" } },
         data: { paymentStatus: "oplacone", paymentRef: fields.ID_PLATNOSCI },
-        include: { items: true },
       });
-      await sendOrderConfirmationEmail(updated);
+      if (count === 0) return false;
+
+      for (const item of order.items) {
+        await tx.productVariant.updateMany({
+          where: { size: item.size, product: { slug: item.productSlug } },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+      // Dwa opłacone zamówienia na ostatnią sztukę — stan nie schodzi poniżej zera.
+      await tx.productVariant.updateMany({
+        where: { stock: { lt: 0 } },
+        data: { stock: 0 },
+      });
+      return true;
+    });
+
+    if (paid) {
+      after(() => sendOrderConfirmationEmail({ ...order, paymentStatus: "oplacone" }));
     }
   } else if (fields.STATUS === "FAILURE") {
     await prisma.order.update({
@@ -38,8 +55,8 @@ export async function POST(request: Request) {
   }
   // PENDING — nic nie robimy, czekamy na kolejną notyfikację.
 
-  revalidatePath("/admin/zamowienia");
-  revalidatePath("/konto/zamowienia");
+  // Stany magazynowe widać na stronach produktów i w sklepie, nie tylko w panelu.
+  revalidatePath("/", "layout");
 
   return new NextResponse("OK", { status: 200 });
 }

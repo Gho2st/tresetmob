@@ -6,7 +6,7 @@ export default async function AdminHero() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-bebas text-3xl tracking-tight uppercase sm:text-4xl">Hero</h1>
+      <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">Hero</h1>
       <HeroForm hero={hero} />
     </div>
   );

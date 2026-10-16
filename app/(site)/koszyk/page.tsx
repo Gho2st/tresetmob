@@ -15,7 +15,7 @@ export default function Koszyk() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           KOSZYK
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Koszyk jest pusty
         </h1>
         <p className="max-w-xs text-sm leading-relaxed text-black/50">
@@ -38,7 +38,7 @@ export default function Koszyk() {
           <span className="text-xs tracking-[0.3em] text-black/40">
             KOSZYK
           </span>
-          <h1 className="font-bebas text-5xl uppercase tracking-tight">
+          <h1 className="font-display text-5xl uppercase tracking-tight">
             Twoje produkty
           </h1>
         </div>

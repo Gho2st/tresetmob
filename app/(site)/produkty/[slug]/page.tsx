@@ -44,17 +44,16 @@ export default async function ProductPage({ params }: Params) {
       <Gallery images={productImages(product)} title={product.title} />
 
       <div className="md:sticky md:top-8 md:h-fit md:pt-8">
-        {" "}
-        <h1 className="text-sm font-semibold tracking-wide uppercase">
+        <h1 className="font-display text-4xl uppercase tracking-tight sm:text-5xl">
           {product.title}
         </h1>
         <PriceTag
           priceCents={product.priceCents}
           salePriceCents={product.salePriceCents}
           lowestPriceCents={product.lowestPriceCents}
-          className="mt-3 block text-sm"
+          className="mt-3 block text-base"
         />
-        <p className="mt-8 text-sm leading-relaxed text-neutral-600">
+        <p className="mt-6 text-sm leading-relaxed text-neutral-600">
           {product.description}
         </p>
         <AddToCart product={product} sizeChart={sizeChart} />

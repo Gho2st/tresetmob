@@ -33,7 +33,7 @@ export default function Footer() {
     <footer className="w-full bg-black text-white">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-20 sm:px-12 md:flex-row md:justify-between lg:px-20">
         <div className="flex flex-col gap-5">
-          <Link href="/" className="font-bebas text-3xl tracking-wide">
+          <Link href="/" className="font-display text-3xl tracking-wide">
             Tresetmob
           </Link>
           {/* <p className="max-w-2xs text-sm leading-relaxed text-white/50">

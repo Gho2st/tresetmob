@@ -5,11 +5,11 @@ export default function NotFoundContent() {
     <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 py-24 text-center text-black">
       <p
         aria-hidden="true"
-        className="font-bebas text-[9rem] leading-none tracking-tight sm:text-[12rem]"
+        className="font-display text-[9rem] leading-none tracking-tight sm:text-[12rem]"
       >
         404
       </p>
-      <h1 className="font-bebas text-4xl uppercase tracking-tight sm:text-5xl">
+      <h1 className="font-display text-4xl uppercase tracking-tight sm:text-5xl">
         Nie ma takiej strony
       </h1>
       <p className="max-w-sm text-sm leading-relaxed text-black/50">

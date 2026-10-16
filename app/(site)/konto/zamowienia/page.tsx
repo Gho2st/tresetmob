@@ -20,7 +20,7 @@ export default async function MojeZamowienia() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           HISTORIA
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Moje zamówienia
         </h1>
       </div>

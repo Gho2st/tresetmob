@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT, RETURN_ADDRESS, SELLER, SITE_URL } from "@/lib/contact";
+import { formatPrice } from "@/lib/cart";
 import { SHOP_POLICY } from "@/lib/shop-policy";
 
 export const metadata: Metadata = { title: "Regulamin sklepu" };
@@ -82,7 +83,7 @@ const SECTIONS: Section[] = [
     id: "ceny-i-platnosci",
     title: "Ceny i płatności",
     clauses: [
-      "Ceny Produktów podawane są w polskich złotych (PLN) i są cenami brutto. Dostawa na terenie Polski jest bezpłatna. Całkowity koszt Zamówienia zostanie podany Kupującemu przed ostatecznym złożeniem Zamówienia.",
+      `Ceny Produktów podawane są w polskich złotych (PLN) i są cenami brutto. Koszt dostawy na terenie Polski wynosi ${formatPrice(SHOP_POLICY.deliveryCostCents)}. Całkowity koszt Zamówienia zostanie podany Kupującemu przed ostatecznym złożeniem Zamówienia.`,
       {
         text: "Do wyboru Kupującego pozostają następujące sposoby zapłaty online:",
         items: [
@@ -105,7 +106,7 @@ const SECTIONS: Section[] = [
       `Wysyłka Zamówień realizowana jest w ciągu ${SHOP_POLICY.dispatchWorkdays} dni roboczych od momentu otrzymania płatności.`,
       "Dostawa realizowana jest od poniedziałku do piątku, z wyjątkiem dni ustawowo wolnych od pracy.",
       "Zamówione przez Kupującego Produkty dostarczane są za pośrednictwem kuriera InPost lub do wybranego Paczkomatu InPost.",
-      "Dostawa jest bezpłatna, niezależnie od wybranego sposobu dostawy i wartości Zamówienia.",
+      `Koszt dostawy wynosi ${formatPrice(SHOP_POLICY.deliveryCostCents)}, niezależnie od wybranego sposobu dostawy i wartości Zamówienia.`,
       "Czas doręczenia przesyłki przez przewoźnika wynosi zwykle 1–2 dni robocze od dnia wysyłki.",
     ],
   },
@@ -116,7 +117,7 @@ const SECTIONS: Section[] = [
       `Kupującemu przysługuje prawo do wymiany danego Produktu na inny rozmiar lub model w ciągu ${SHOP_POLICY.exchangeDays} dni od dnia otrzymania Zamówienia.`,
       "Koszt wysyłki Produktu do Sprzedającego ponosi Kupujący.",
       "Odsyłany Produkt nie może nosić żadnych śladów użytkowania.",
-      "Do Produktu należy dołączyć paragon lub fakturę oraz formularz, który jest dostępny na stronie Zwroty i reklamacje.",
+      "Do Produktu należy dołączyć formularz, który jest dostępny na stronie Zwroty i reklamacje.",
       `Produkt należy odesłać na adres: ${RETURN_ADDRESS_TEXT}.`,
       "Wymiana zostanie zrealizowana niezwłocznie po otrzymaniu przesyłki, nie później jednak niż 14 dni od daty otrzymania Produktu.",
       "W sytuacji niedostępności Produktu Sprzedający skontaktuje się z Kupującym w celu ustalenia przybliżonej daty realizacji wymiany.",
@@ -128,7 +129,6 @@ const SECTIONS: Section[] = [
     title: "Zwrot",
     clauses: [
       `Konsument, zgodnie z art. 27 ustawy o prawach konsumenta z dnia 30 maja 2014 r. (Dz.U. z 2014 r. poz. 827), nabywający Produkt w Sklepie, ma możliwość odstąpienia od zawartej na odległość umowy w terminie ${SHOP_POLICY.returnDays} dni od dnia dostawy Produktu, bez ponoszenia kosztów innych niż bezpośrednie koszty zwrotu. Do zachowania tego terminu wystarczy wysłanie oświadczenia przed jego upływem. Oświadczenie (formularz zwrotu) można wysłać razem z Produktem na adres: ${RETURN_ADDRESS_TEXT}.`,
-      "Do Produktu należy dołączyć paragon lub fakturę.",
       "Produkt nie może nosić śladów użytkowania.",
       "Konsument zwraca Produkty na własne ryzyko i koszt.",
       "Zwrotowi ani wymianie nie podlega (m.in. z powodów higienicznych) bielizna.",
@@ -207,7 +207,7 @@ export default function Regulamin() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           INFORMACJE
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Regulamin sklepu
         </h1>
         <p className="text-xs text-black/40">

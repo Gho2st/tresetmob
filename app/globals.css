@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-bebas: var(--font-bebas);
+  --font-display: var(--font-display);
 }
 
 body {

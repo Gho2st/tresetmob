@@ -1,9 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { CartItem } from "@/lib/cart";
-import { sendOrderConfirmationEmail } from "@/lib/mail";
+import { findDiscount, discountAmount } from "@/lib/discounts";
 import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
+import { SHOP_POLICY } from "@/lib/shop-policy";
+
+// Z przeglądarki przyjmujemy tylko CO klient kupuje (slug, rozmiar, ilość) i
+// jaki kod wpisał. Ceny, rabat i sumę liczy serwer z bazy — inaczej podmieniony
+// request mógłby przepuścić zamówienie za dowolną kwotę prosto do bramki.
+type OrderLine = { slug: string; size: string; quantity: number };
 
 type CreateOrderInput = {
   email: string;
@@ -15,56 +20,100 @@ type CreateOrderInput = {
   postalCode?: string;
   city?: string;
   inpostPoint?: string;
-  paymentMethod: string;
   acceptedTerms: boolean;
-  items: CartItem[];
-  subtotalCents: number;
-  totalCents: number;
+  items: OrderLine[];
+  discountCode?: string | null;
 };
+
+// Błąd, którego treść można pokazać klientowi. Zwykłe `throw` z Server Action
+// Next na produkcji zamienia na ogólny komunikat, więc te zwracamy jako wartość.
+class CheckoutError extends Error {}
+
+export async function createOrder(
+  input: CreateOrderInput,
+): Promise<{ redirectUrl: string } | { error: string }> {
+  try {
+    return await placeOrder(input);
+  } catch (error) {
+    if (error instanceof CheckoutError) return { error: error.message };
+    throw error;
+  }
+}
 
 function generateOrderNumber() {
   const random = Math.random().toString(36).slice(2, 6).toUpperCase();
   return `TM-${Date.now().toString(36).toUpperCase()}${random}`;
 }
 
-export async function createOrder(input: CreateOrderInput) {
+async function priceLines(lines: OrderLine[]) {
+  const products = await prisma.product.findMany({
+    where: { slug: { in: [...new Set(lines.map((l) => l.slug))] } },
+    include: { variants: true },
+  });
+  const bySlug = new Map(products.map((p) => [p.slug, p]));
+
+  return lines.map((line) => {
+    const product = bySlug.get(line.slug);
+    if (!product) throw new CheckoutError("Produkt nie jest już dostępny.");
+    if (!Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > 99) {
+      throw new CheckoutError("Nieprawidłowa ilość.");
+    }
+    const variant = product.variants.find((v) => v.size === line.size);
+    if (!variant || variant.stock < line.quantity) {
+      throw new CheckoutError(`${product.title} (${line.size}) nie jest dostępny w tej ilości.`);
+    }
+
+    return {
+      productSlug: product.slug,
+      title: product.title,
+      image: product.images[0] ?? "",
+      size: line.size,
+      quantity: line.quantity,
+      priceCents: product.salePriceCents ?? product.priceCents,
+    };
+  });
+}
+
+async function placeOrder(input: CreateOrderInput) {
   if (!input.email || !input.phone || !input.firstName || !input.lastName) {
-    throw new Error("Uzupełnij dane kontaktowe.");
+    throw new CheckoutError("Uzupełnij dane kontaktowe.");
   }
   if (input.deliveryMethod === "kurier" && (!input.address || !input.postalCode || !input.city)) {
-    throw new Error("Uzupełnij adres dostawy.");
+    throw new CheckoutError("Uzupełnij adres dostawy.");
   }
   if (input.deliveryMethod === "paczkomat" && !input.inpostPoint) {
-    throw new Error("Wybierz paczkomat.");
+    throw new CheckoutError("Wybierz paczkomat.");
   }
   if (!input.acceptedTerms) {
-    throw new Error("Zaakceptuj regulamin sklepu.");
+    throw new CheckoutError("Zaakceptuj regulamin sklepu.");
   }
   if (input.items.length === 0) {
-    throw new Error("Koszyk jest pusty.");
+    throw new CheckoutError("Koszyk jest pusty.");
   }
+
+  const items = await priceLines(input.items);
+  const subtotalCents = items.reduce((sum, i) => sum + i.priceCents * i.quantity, 0);
+  const discount = input.discountCode ? findDiscount(input.discountCode) : null;
+  const discountCents = discount ? Math.round(discountAmount(subtotalCents, discount)) : 0;
+  const totalCents = subtotalCents - discountCents + SHOP_POLICY.deliveryCostCents;
 
   const number = generateOrderNumber();
 
-  // Dla HotPay najpierw inicjujemy płatność — zamówienie zapisujemy w bazie
-  // dopiero gdy bramka faktycznie zwróci link do zapłaty, żeby nie zostawiać
-  // "martwych" zamówień po nieudanej inicjalizacji.
-  let redirectUrl: string | undefined;
-  if (input.paymentMethod === "hotpay") {
-    const init = await initHotpayPayment({
-      orderNumber: number,
-      amountCents: input.totalCents,
-      description: `Zamówienie ${number}`,
-      email: input.email,
-      returnUrl: `${siteUrl()}/kasa/potwierdzenie?number=${number}`,
-    });
-    if (!init.ok) {
-      throw new Error(init.error);
-    }
-    redirectUrl = init.url;
+  // Najpierw inicjujemy płatność — zamówienie zapisujemy dopiero, gdy bramka
+  // zwróci link, żeby nie zostawiać "martwych" zamówień po nieudanej inicjalizacji.
+  const init = await initHotpayPayment({
+    orderNumber: number,
+    amountCents: totalCents,
+    description: `Zamówienie ${number}`,
+    email: input.email,
+    returnUrl: `${siteUrl()}/kasa/potwierdzenie?number=${number}`,
+  });
+  if (!init.ok) {
+    throw new CheckoutError(init.error);
   }
 
-  const order = await prisma.order.create({
+  // Potwierdzenie mailowe wysyła webhook HotPay po zaksięgowaniu płatności.
+  await prisma.order.create({
     data: {
       number,
       customerEmail: input.email,
@@ -75,30 +124,14 @@ export async function createOrder(input: CreateOrderInput) {
       postalCode: input.postalCode,
       city: input.city,
       inpostPoint: input.inpostPoint,
-      paymentMethod: input.paymentMethod,
-      paymentStatus: input.paymentMethod === "hotpay" ? "oczekuje" : "oplacone",
-      subtotalCents: input.subtotalCents,
-      discountCents: Math.max(input.subtotalCents - input.totalCents, 0),
-      totalCents: input.totalCents,
-      items: {
-        create: input.items.map((item) => ({
-          productSlug: item.slug,
-          title: item.title,
-          image: item.image,
-          size: item.size,
-          quantity: item.quantity,
-          priceCents: item.priceCents,
-        })),
-      },
+      paymentMethod: "hotpay",
+      paymentStatus: "oczekuje",
+      subtotalCents,
+      discountCents,
+      totalCents,
+      items: { create: items },
     },
-    include: { items: true },
   });
 
-  // Dla HotPay potwierdzenie wysyłamy dopiero z webhooka, po realnym
-  // zaksięgowaniu płatności — tutaj klient dopiero jedzie ją opłacić.
-  if (input.paymentMethod !== "hotpay") {
-    await sendOrderConfirmationEmail(order);
-  }
-
-  return { number: order.number, redirectUrl };
+  return { redirectUrl: init.url };
 }

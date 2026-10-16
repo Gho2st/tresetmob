@@ -51,6 +51,29 @@ function deliveryLine(order: OrderWithItems) {
   return [order.address, order.postalCode, order.city].filter(Boolean).join(", ");
 }
 
+function costRows(order: OrderWithItems) {
+  const deliveryCents = order.totalCents - order.subtotalCents + order.discountCents;
+  const discountRow =
+    order.discountCents > 0
+      ? `
+        <tr>
+          <td style="padding:4px 0;font-size:14px;color:#111;">Rabat</td>
+          <td style="padding:4px 0;font-size:14px;color:#111;text-align:right;">-${formatPrice(order.discountCents)}</td>
+        </tr>`
+      : "";
+
+  return `
+    ${discountRow}
+    <tr>
+      <td style="padding:4px 0;font-size:14px;color:#111;">Dostawa</td>
+      <td style="padding:4px 0;font-size:14px;color:#111;text-align:right;">${formatPrice(deliveryCents)}</td>
+    </tr>
+    <tr>
+      <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;">Razem</td>
+      <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;text-align:right;">${formatPrice(order.totalCents)}</td>
+    </tr>`;
+}
+
 function itemsRows(items: OrderItem[]) {
   return items
     .map(
@@ -87,12 +110,9 @@ export async function sendOrderConfirmationEmail(order: OrderWithItems) {
     <p style="font-size:14px;"><strong>Numer zamówienia:</strong> ${order.number}</p>
     <table style="width:100%;border-collapse:collapse;margin:16px 0;">
       ${itemsRows(order.items)}
-      <tr>
-        <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;">Razem</td>
-        <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;text-align:right;">${formatPrice(order.totalCents)}</td>
-      </tr>
+      ${costRows(order)}
     </table>
-    <p style="font-size:14px;"><strong>Dostawa:</strong> ${deliveryLine(order)}</p>
+    <p style="font-size:14px;"><strong>Adres dostawy:</strong> ${deliveryLine(order)}</p>
     <p style="font-size:14px;"><strong>Płatność:</strong> ${order.paymentMethod}</p>
     <p style="font-size:14px;line-height:1.6;">
       Status zamówienia możesz śledzić w zakładce „Moje konto” → „Moje zamówienia”.
@@ -116,10 +136,7 @@ export async function sendOrderStatusEmail(order: OrderWithItems) {
     </p>
     <table style="width:100%;border-collapse:collapse;margin:16px 0;">
       ${itemsRows(order.items)}
-      <tr>
-        <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;">Razem</td>
-        <td style="padding-top:12px;border-top:1px solid #eee;font-size:14px;font-weight:bold;text-align:right;">${formatPrice(order.totalCents)}</td>
-      </tr>
+      ${costRows(order)}
     </table>
     <p style="font-size:14px;line-height:1.6;">
       Szczegóły zamówienia znajdziesz w zakładce „Moje konto” → „Moje zamówienia”.

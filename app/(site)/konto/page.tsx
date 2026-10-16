@@ -11,7 +11,7 @@ export default async function Konto() {
         <span className="text-xs tracking-[0.3em] text-black/40">
           MOJE KONTO
         </span>
-        <h1 className="font-bebas text-5xl uppercase tracking-tight">
+        <h1 className="font-display text-5xl uppercase tracking-tight">
           Witaj, {session.user?.name?.split(" ")[0] ?? "Kliencie"}
         </h1>
       </div>
