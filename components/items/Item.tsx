@@ -26,7 +26,7 @@ export default function Item({
   soldOut = false,
 }: ItemProps) {
   const [main, hover] = images;
-  // Wygaszamy zdjęcie i opis, ale nie napis „Wyprzedane” — ten ma być czytelny.
+  // Wygaszamy zdjęcie i opis, ale nie napis „Sold out” — ten ma być czytelny.
   const dimmed = soldOut ? "opacity-40 transition-opacity group-hover:opacity-60" : "";
 
   return (
@@ -51,24 +51,26 @@ export default function Item({
             />
           )}
         </div>
-      </div>
-      <div className="mt-4 text-center">
-        <div className={dimmed}>
-          <h3 className="text-sm font-semibold tracking-wide uppercase group-hover:underline">
-            {title}
-          </h3>
-          <PriceTag
-            priceCents={priceCents}
-            salePriceCents={salePriceCents}
-            lowestPriceCents={lowestPriceCents}
-            className="mt-3 block text-sm"
-          />
-        </div>
         {soldOut && (
-          <span className="mt-2 block text-[11px] tracking-[0.3em] text-black/50 uppercase">
-            Wyprzedane
+          <span className="absolute inset-0 flex items-center justify-center">
+            {/* prawy padding mniejszy o tracking — inaczej odstęp za ostatnią literą
+                przesuwa tekst w lewo względem ramki */}
+            <span className="border border-black py-2 pl-5 pr-[calc(1.25rem-0.35em)] text-sm font-medium tracking-[0.35em] text-black uppercase">
+              Sold out
+            </span>
           </span>
         )}
+      </div>
+      <div className={`mt-4 text-center ${dimmed}`}>
+        <h3 className="text-sm font-semibold tracking-wide uppercase group-hover:underline">
+          {title}
+        </h3>
+        <PriceTag
+          priceCents={priceCents}
+          salePriceCents={salePriceCents}
+          lowestPriceCents={lowestPriceCents}
+          className="mt-3 block text-sm"
+        />
       </div>
     </Link>
   );
