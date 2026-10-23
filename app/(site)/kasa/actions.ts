@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { findDiscount, discountAmount } from "@/lib/discounts";
 import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
 import { SHOP_POLICY } from "@/lib/shop-policy";
+import { auth } from "@/auth";
+import { findOrCreateUserId } from "@/lib/users";
 
 // Z przeglądarki przyjmujemy tylko CO klient kupuje (slug, rozmiar, ilość) i
 // jaki kod wpisał. Ceny, rabat i sumę liczy serwer z bazy — inaczej podmieniony
@@ -112,10 +114,18 @@ async function placeOrder(input: CreateOrderInput) {
     throw new CheckoutError(init.error);
   }
 
+  // Zalogowany klient dostaje zamówienie przypięte do konta — panel odróżnia
+  // dzięki temu zakupy z konta od zakupów jako gość.
+  const session = await auth();
+  const userId = session?.user?.email
+    ? await findOrCreateUserId(session.user.email, session.user.name)
+    : null;
+
   // Potwierdzenie mailowe wysyła webhook HotPay po zaksięgowaniu płatności.
   await prisma.order.create({
     data: {
       number,
+      userId,
       customerEmail: input.email,
       customerName: `${input.firstName} ${input.lastName}`.trim(),
       phone: input.phone,

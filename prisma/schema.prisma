@@ -99,9 +99,28 @@ model Order {
   totalCents     Int
   status         String      @default("nowe")
   items          OrderItem[]
+  // Konto, z którego złożono zamówienie — null to zakup jako gość (oraz
+  // wszystkie zamówienia sprzed wprowadzenia tabeli User).
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId         String?
   createdAt      DateTime    @default(now())
 
   @@index([customerEmail])
+  @@index([userId])
+}
+
+// Klient, który zalogował się w sklepie (Google / Facebook). Sesje są w JWT,
+// więc ta tabela nie służy do logowania — zapisujemy ją przy każdym wejściu,
+// żeby panel mógł policzyć konta. Admini się tu nie trafiają (lib/users.ts).
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  provider    String // "google" | "facebook"
+  loginCount  Int      @default(1)
+  lastLoginAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  orders      Order[]
 }
 
 model OrderItem {

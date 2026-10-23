@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
 import Credentials from "next-auth/providers/credentials";
 import { verifyAdminCredentials } from "@/lib/admin-credentials";
+import { recordSignIn } from "@/lib/users";
 
 // Provider bez kluczy wywala się dopiero w momencie kliknięcia przycisku, więc
 // dokładamy Facebooka tylko wtedy, gdy jest skonfigurowany. Strona logowania
@@ -58,8 +59,16 @@ export const {
     // numer telefonu albo cofnięta zgoda. Taka sesja przeszłaby logowanie, po
     // czym requireUser odbiłby klienta z powrotem na /logowanie bez słowa
     // wyjaśnienia, więc odrzucamy ją tutaj i mówimy, co się stało.
-    signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user.email) return "/logowanie?blad=brak-emaila";
+      // Hasłem loguje się tylko admin, więc liczymy wyłącznie logowania OAuth.
+      if (account && account.provider !== "credentials") {
+        await recordSignIn({
+          email: user.email,
+          name: user.name,
+          provider: account.provider,
+        });
+      }
       return true;
     },
   },

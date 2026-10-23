@@ -16,7 +16,7 @@ export default async function AdminLayout({
           szerokim ekranie wrócił jeden pasek bez powielania formularza. */}
       <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-black/10 px-4 py-3 sm:h-14 sm:flex-nowrap sm:gap-x-8 sm:py-0 md:px-6">
         <Link
-          href="/admin/produkty"
+          href="/admin"
           className="order-1 font-display text-xl tracking-wider"
         >
           Tresetmob — Admin
@@ -42,6 +42,9 @@ export default async function AdminLayout({
         </div>
 
         <nav className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs tracking-widest uppercase sm:order-2 sm:w-auto sm:gap-x-6 sm:text-sm">
+          <Link href="/admin" className="text-black/70 hover:text-black">
+            Podsumowanie
+          </Link>
           <Link href="/admin/produkty" className="text-black/70 hover:text-black">
             Produkty
           </Link>

@@ -13,7 +13,7 @@ async function authenticate(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/admin/produkty",
+      redirectTo: "/admin",
     });
   } catch (error) {
     // signIn() na sukces i tak rzuca (przekierowanie) — łapiemy TYLKO błąd logowania,
@@ -44,7 +44,7 @@ export default async function AdminLogin({ searchParams }: Props) {
         className="w-full max-w-sm"
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: "/admin/produkty" });
+          await signIn("google", { redirectTo: "/admin" });
         }}
       >
         <button
