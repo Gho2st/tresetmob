@@ -13,25 +13,64 @@ export default async function Insta() {
   // z repozytorium i sekcja wygląda dokładnie jak przedtem.
   const post = await getLatestInstagramPost();
 
+  // Kadr układa się pod proporcje posta (ten z repozytorium jest kwadratowy).
+  // Na mobile wypełnia całą szerokość, a pionowy reel przycinamy do 4:5 jak
+  // siatka Instagrama, żeby nie zajął półtora ekranu. Na desktopie panel ma
+  // stały rozmiar, a post stoi w nim w pełnych proporcjach na tle własnej,
+  // rozmytej kopii — dzięki temu wąski reel nie zostawia pustych pasów.
+  const ratio = post?.aspectRatio ?? 1;
+  const frameStyle = {
+    "--ar-sm": Math.min(Math.max(ratio, 4 / 5), 1.91),
+    "--ar-lg": ratio,
+  } as React.CSSProperties;
+  const src = post?.imageUrl ?? "/insta.png";
+
   return (
     <section
       aria-labelledby="social-heading"
-      className="xl:my-24 mx-auto flex w-full max-w-[1280px] flex-col bg-black text-white lg:min-h-[420px] lg:flex-row 2xl:max-w-[1440px]"
+      className="xl:my-24 mx-auto flex w-full max-w-[1280px] flex-col bg-black text-white lg:flex-row 2xl:max-w-[1440px]"
     >
       {/* ---------- zdjęcie ---------- */}
-      <figure className="group relative m-0 aspect-square w-full overflow-hidden lg:aspect-auto lg:w-[54%] lg:self-stretch 2xl:w-[58%]">
+      <figure
+        style={frameStyle}
+        className="group relative m-0 aspect-(--ar-sm) w-full shrink-0 overflow-hidden lg:flex lg:aspect-auto lg:h-[560px] lg:w-[54%] lg:items-center lg:justify-center lg:py-12 2xl:h-[640px] 2xl:w-[58%] 2xl:py-14"
+      >
+        {/* tło z tego samego kadru — rozmyte i przygaszone, żeby nie
+            konkurowało z postem; na mobile kadr i tak wypełnia ramkę */}
         <Image
-          src={post?.imageUrl ?? "/insta.png"}
-          alt={
-            post
-              ? `Najnowszy post z profilu @${SOCIAL_HANDLE}`
-              : "Kadr z profilu @tresetmob"
-          }
+          src={src}
+          alt=""
+          aria-hidden="true"
           fill
-          sizes="(max-width: 1024px) 100vw, (max-width: 1536px) 54vw, 58vw"
-          className="object-contain"
-          priority
+          sizes="240px"
+          className="hidden scale-125 object-cover opacity-50 blur-2xl lg:block"
         />
+
+        <div className="absolute inset-0 lg:relative lg:inset-auto lg:z-[1] lg:aspect-(--ar-lg) lg:h-full lg:max-w-[calc(100%-6rem)] lg:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] lg:ring-1 lg:ring-white/10">
+          <Image
+            src={src}
+            alt={
+              post
+                ? `Najnowszy post z profilu @${SOCIAL_HANDLE}`
+                : "Kadr z profilu @tresetmob"
+            }
+            fill
+            sizes="(max-width: 1024px) 100vw, 640px"
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:scale-[1.03] motion-reduce:transition-none"
+            priority
+          />
+
+          {post?.isVideo && (
+            <span
+              aria-hidden="true"
+              className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center bg-black/45 backdrop-blur-sm"
+            >
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 translate-x-px">
+                <path d="M7 4.5v15L19.5 12z" fill="currentColor" />
+              </svg>
+            </span>
+          )}
+        </div>
 
         {/* scrim pod podpisem, żeby biały tekst zawsze był czytelny */}
         <div
@@ -59,10 +98,10 @@ export default async function Insta() {
       </figure>
 
       {/* ---------- treść ---------- */}
-      <div className="flex w-full lg:w-[46%] 2xl:w-[42%]">
+      <div className="flex w-full lg:min-w-0 lg:flex-1">
         {/* kolumna tekstowa ma własną szerokość, żeby na szerokich ekranach
             nie rozjeżdżała się na całą połówkę sekcji */}
-        <div className="flex w-full max-w-[460px] flex-col justify-between gap-8 px-5 py-8 sm:px-7 lg:px-10 lg:py-9 2xl:max-w-[520px] 2xl:px-12 2xl:py-11">
+        <div className="flex w-full max-w-[460px] flex-col justify-between gap-8 px-5 py-8 sm:px-7 lg:px-10 lg:py-12 2xl:max-w-[520px] 2xl:px-12 2xl:py-14">
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3 text-[0.65rem] tracking-[0.25em] text-white/35">
               <span aria-hidden="true" className="h-px w-8 bg-white/25" />

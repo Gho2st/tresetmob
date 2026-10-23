@@ -13,6 +13,9 @@ export type InstagramPost = {
   permalink: string;
   caption: string | null;
   timestamp: string;
+  /** szerokość / wysokość kadru — sekcja socialowa układa się pod nią */
+  aspectRatio: number;
+  isVideo: boolean;
 };
 
 export type TokenStatus = {
@@ -118,6 +121,46 @@ export async function refreshStoredInstagramToken() {
 }
 
 /**
+ * API Instagrama nie podaje wymiarów posta, więc czytamy je z nagłówka JPEG.
+ * Wystarczy początek pliku — CDN Instagrama honoruje Range, a znacznik SOF
+ * leży przed danymi obrazu, za co najwyżej jednym segmentem APP (≤ 64 KB).
+ */
+async function readAspectRatio(imageUrl: string): Promise<number | null> {
+  try {
+    const response = await fetch(imageUrl, {
+      headers: { Range: "bytes=0-131071" },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!response.ok) return null;
+
+    const buf = new Uint8Array(await response.arrayBuffer());
+    if (buf[0] !== 0xff || buf[1] !== 0xd8) return null;
+
+    let i = 2;
+    while (i + 8 < buf.length) {
+      if (buf[i] !== 0xff) return null;
+      const marker = buf[i + 1];
+      // SOF0–SOF15 poza DHT (C4), JPG (C8) i DAC (CC) niosą wymiary obrazu.
+      if (
+        marker >= 0xc0 &&
+        marker <= 0xcf &&
+        marker !== 0xc4 &&
+        marker !== 0xc8 &&
+        marker !== 0xcc
+      ) {
+        const height = (buf[i + 5] << 8) | buf[i + 6];
+        const width = (buf[i + 7] << 8) | buf[i + 8];
+        return width && height ? width / height : null;
+      }
+      i += 2 + ((buf[i + 2] << 8) | buf[i + 3]);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Najnowszy post nadający się na kadr w sekcji socialowej. Zwraca null przy
  * każdym problemie — brak tokenu, wygasły token, awaria API — bo sekcja ma
  * wtedy pokazać zdjęcie z repozytorium, a nie puste miejsce.
@@ -153,6 +196,10 @@ export async function getLatestInstagramPost(): Promise<InstagramPost | null> {
         permalink: item.permalink,
         caption: item.caption ?? null,
         timestamp: item.timestamp,
+        aspectRatio:
+          (await readAspectRatio(imageUrl)) ??
+          (item.media_type === "VIDEO" ? 9 / 16 : 1),
+        isVideo: item.media_type === "VIDEO",
       };
     }
 
