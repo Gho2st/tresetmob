@@ -73,75 +73,71 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
         />
       </section>
 
-      <p className="-mt-6 flex flex-wrap gap-x-6 gap-y-1 text-xs text-black/45">
-        <span>
-          Liczymy zamówienia opłacone i nieanulowane
-          {previous && <>, porównanie z poprzednimi {PERIODS[period].label}</>}.
-        </span>
-        {current.discountCents > 0 && (
-          <span>Udzielone rabaty: {formatPrice(current.discountCents)}</span>
-        )}
-        {stats.pendingPayments > 0 && (
-          <span className="text-amber-700">
-            Oczekuje na płatność: {stats.pendingPayments}
-          </span>
-        )}
-        {stats.failedPayments > 0 && (
-          <span className="text-red-700">
-            Nieudane płatności: {stats.failedPayments}
-          </span>
-        )}
-      </p>
+      {(current.discountCents > 0 ||
+        stats.pendingPayments > 0 ||
+        stats.failedPayments > 0) && (
+        <p className="-mt-6 flex flex-wrap gap-x-6 gap-y-1 text-xs text-black/45">
+          {current.discountCents > 0 && (
+            <span>Udzielone rabaty: {formatPrice(current.discountCents)}</span>
+          )}
+          {stats.pendingPayments > 0 && (
+            <span className="text-amber-700">
+              Oczekuje na płatność: {stats.pendingPayments}
+            </span>
+          )}
+          {stats.failedPayments > 0 && (
+            <span className="text-red-700">
+              Nieudane płatności: {stats.failedPayments}
+            </span>
+          )}
+        </p>
+      )}
 
       {/* ---------- konta ---------- */}
       <section className="flex flex-col gap-4">
         <SectionTitle>Konta klientów</SectionTitle>
         {stats.accounts ? (
-          <>
-            <div className="grid grid-cols-2 border-t border-l border-black/10 lg:grid-cols-4">
-              <Stat
-                label="Konta łącznie"
-                value={String(stats.accounts.total)}
-                now={stats.accounts.total}
-                note={
-                  stats.accounts.byProvider.length > 0
-                    ? stats.accounts.byProvider
-                        .map((p) => `${PROVIDERS[p.provider] ?? p.provider} ${p.count}`)
-                        .join(" · ")
-                    : "Jeszcze nikt się nie zalogował"
-                }
-              />
-              <Stat
-                label="Nowe konta"
-                value={String(stats.accounts.created)}
-                now={stats.accounts.created}
-                before={stats.accounts.createdBefore ?? undefined}
-              />
-              <Stat
-                label="Zalogowani w okresie"
-                value={String(stats.accounts.active)}
-                now={stats.accounts.active}
-                note="Klienci, którzy się logowali"
-              />
-              <Stat
-                label="Zamówienia z konta"
-                value={`${stats.accounts.ordersFromAccounts} / ${current.orders}`}
-                now={stats.accounts.ordersFromAccounts}
-                note={
-                  current.orders > 0
-                    ? `${Math.round(
-                        (stats.accounts.ordersFromAccounts / current.orders) * 100,
-                      )}% · jako gość: ${stats.accounts.ordersAsGuest}`
-                    : "Brak opłaconych zamówień"
-                }
-              />
-            </div>
-            <p className="text-xs text-black/45">
-              Konta liczymy od wdrożenia tej funkcji — wcześniejszych logowań
-              sklep nie zapisywał, a starsze zamówienia liczą się jako gość.
-              Admini nie są wliczani.
-            </p>
-          </>
+          <div className="grid grid-cols-2 border-t border-l border-black/10 lg:grid-cols-4">
+            <Stat
+              label="Konta łącznie"
+              value={String(stats.accounts.total)}
+              now={stats.accounts.total}
+              note={
+                stats.accounts.byProvider.length > 0
+                  ? stats.accounts.byProvider
+                      .map(
+                        (p) =>
+                          `${PROVIDERS[p.provider] ?? p.provider} ${p.count}`,
+                      )
+                      .join(" · ")
+                  : "Jeszcze nikt się nie zalogował"
+              }
+            />
+            <Stat
+              label="Nowe konta"
+              value={String(stats.accounts.created)}
+              now={stats.accounts.created}
+              before={stats.accounts.createdBefore ?? undefined}
+            />
+            <Stat
+              label="Zalogowani w okresie"
+              value={String(stats.accounts.active)}
+              now={stats.accounts.active}
+            />
+            <Stat
+              label="Zamówienia z konta"
+              value={`${stats.accounts.ordersFromAccounts} / ${current.orders}`}
+              now={stats.accounts.ordersFromAccounts}
+              note={
+                current.orders > 0
+                  ? `${Math.round(
+                      (stats.accounts.ordersFromAccounts / current.orders) *
+                        100,
+                    )}% · jako gość: ${stats.accounts.ordersAsGuest}`
+                  : "Brak opłaconych zamówień"
+              }
+            />
+          </div>
         ) : (
           <Empty>
             Brak tabeli kont w bazie — uruchom migrację{" "}
@@ -169,7 +165,9 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
                   key={status}
                   className="flex items-center gap-4 py-2.5 text-sm"
                 >
-                  <span className="w-28 shrink-0 first-letter:uppercase">{status}</span>
+                  <span className="w-28 shrink-0 first-letter:uppercase">
+                    {status}
+                  </span>
                   <span className="h-1.5 flex-1 bg-black/5">
                     <span
                       className="block h-full bg-black"
@@ -185,13 +183,18 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
 
         {/* ---------- bestsellery ---------- */}
         <section className="flex flex-col gap-4">
-          <SectionTitle href="/admin/produkty">Najlepiej się sprzedają</SectionTitle>
+          <SectionTitle href="/admin/produkty">
+            Najlepiej się sprzedają
+          </SectionTitle>
           {stats.topProducts.length === 0 ? (
             <Empty>Brak sprzedaży w tym okresie.</Empty>
           ) : (
             <ol className="flex flex-col divide-y divide-black/10 border-y border-black/10">
               {stats.topProducts.map((product, i) => (
-                <li key={product.title} className="flex items-center gap-3 py-2.5">
+                <li
+                  key={product.title}
+                  className="flex items-center gap-3 py-2.5"
+                >
                   <span className="w-4 text-xs text-black/35 tabular-nums">
                     {i + 1}
                   </span>
@@ -222,7 +225,9 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
 
         {/* ---------- ostatnie zamówienia ---------- */}
         <section className="flex flex-col gap-4">
-          <SectionTitle href="/admin/zamowienia">Ostatnie zamówienia</SectionTitle>
+          <SectionTitle href="/admin/zamowienia">
+            Ostatnie zamówienia
+          </SectionTitle>
           {stats.recentOrders.length === 0 ? (
             <Empty>Brak zamówień w tym okresie.</Empty>
           ) : (
@@ -264,7 +269,9 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
 
         {/* ---------- stany magazynowe ---------- */}
         <section className="flex flex-col gap-4">
-          <SectionTitle href="/admin/produkty">Kończy się na magazynie</SectionTitle>
+          <SectionTitle href="/admin/produkty">
+            Kończy się na magazynie
+          </SectionTitle>
           {stats.lowStock.length === 0 ? (
             <Empty>Wszystkie rozmiary mają po kilka sztuk.</Empty>
           ) : (
@@ -359,7 +366,10 @@ function Stat({
   ) : null;
   if (!note && before !== undefined) {
     if (before === 0) {
-      delta = now > 0 ? <span className="text-black/45">nowość w okresie</span> : null;
+      delta =
+        now > 0 ? (
+          <span className="text-black/45">nowość w okresie</span>
+        ) : null;
     } else {
       const pct = Math.round(((now - before) / before) * 100);
       delta =
@@ -413,11 +423,16 @@ function RevenueChart({ buckets }: { buckets: Bucket[] }) {
           <span className="absolute top-1/2 right-0 -translate-y-1/2">
             {axisLabel(max / 2)}
           </span>
-          <span className="absolute bottom-0 right-0 translate-y-1/2">0 zł</span>
+          <span className="absolute bottom-0 right-0 translate-y-1/2">
+            0 zł
+          </span>
         </div>
 
         <div className="relative h-52 flex-1">
-          <div aria-hidden="true" className="absolute inset-0 flex flex-col justify-between">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex flex-col justify-between"
+          >
             <span className="border-t border-black/[0.07]" />
             <span className="border-t border-black/[0.07]" />
             <span className="border-t border-black/25" />
@@ -496,7 +511,9 @@ function RevenueChart({ buckets }: { buckets: Bucket[] }) {
             {buckets.map((bucket, i) => (
               <tr key={i}>
                 <td className="py-1">{bucket.title}</td>
-                <td className="py-1 text-right tabular-nums">{bucket.orders}</td>
+                <td className="py-1 text-right tabular-nums">
+                  {bucket.orders}
+                </td>
                 <td className="py-1 text-right tabular-nums">
                   {formatPrice(bucket.cents)}
                 </td>
