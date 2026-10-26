@@ -90,6 +90,11 @@ model Order {
   city           String?
   inpostPoint    String?
   paymentMethod  String
+  // Zakup na firmę — wypełnione tylko, gdy klient zaznaczył fakturę VAT.
+  // Adres firmy trzymamy w jednej linii, bo służy wyłącznie do wystawienia faktury.
+  companyName    String?
+  companyNip     String?
+  companyAddress String?
   // "oczekuje" | "oplacone" | "nieudane" — ustawia webhook HotPay. Default
   // "oplacone" zostaje tylko dla starszych zamówień sprzed integracji bramki.
   paymentStatus  String      @default("oplacone")

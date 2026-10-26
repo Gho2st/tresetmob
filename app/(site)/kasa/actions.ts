@@ -6,6 +6,7 @@ import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
 import { SHOP_POLICY } from "@/lib/shop-policy";
 import { auth } from "@/auth";
 import { findOrCreateUserId } from "@/lib/users";
+import { isValidNip, normalizeNip } from "@/lib/nip";
 
 // Z przeglądarki przyjmujemy tylko CO klient kupuje (slug, rozmiar, ilość) i
 // jaki kod wpisał. Ceny, rabat i sumę liczy serwer z bazy — inaczej podmieniony
@@ -23,6 +24,14 @@ type CreateOrderInput = {
   city?: string;
   inpostPoint?: string;
   acceptedTerms: boolean;
+  // Obecne tylko przy zakupie na firmę (faktura VAT).
+  company?: {
+    name: string;
+    nip: string;
+    address: string;
+    postalCode: string;
+    city: string;
+  } | null;
   items: OrderLine[];
   discountCode?: string | null;
 };
@@ -86,6 +95,23 @@ async function placeOrder(input: CreateOrderInput) {
   if (input.deliveryMethod === "paczkomat" && !input.inpostPoint) {
     throw new CheckoutError("Wybierz paczkomat.");
   }
+  const company = input.company
+    ? {
+        name: input.company.name.trim(),
+        nip: normalizeNip(input.company.nip),
+        address: input.company.address.trim(),
+        postalCode: input.company.postalCode.trim(),
+        city: input.company.city.trim(),
+      }
+    : null;
+  if (company) {
+    if (!company.name || !company.address || !company.postalCode || !company.city) {
+      throw new CheckoutError("Uzupełnij dane firmy do faktury.");
+    }
+    if (!isValidNip(company.nip)) {
+      throw new CheckoutError("Nieprawidłowy NIP.");
+    }
+  }
   if (!input.acceptedTerms) {
     throw new CheckoutError("Zaakceptuj regulamin sklepu.");
   }
@@ -135,6 +161,11 @@ async function placeOrder(input: CreateOrderInput) {
       city: input.city,
       inpostPoint: input.inpostPoint,
       paymentMethod: "hotpay",
+      companyName: company?.name,
+      companyNip: company?.nip,
+      companyAddress: company
+        ? `${company.address}, ${company.postalCode} ${company.city}`
+        : undefined,
       paymentStatus: "oczekuje",
       subtotalCents,
       discountCents,

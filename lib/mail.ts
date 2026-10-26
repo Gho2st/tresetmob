@@ -44,6 +44,25 @@ async function sendMail(to: string, subject: string, html: string) {
   }
 }
 
+// Dane firmy wpisuje klient, a trafiają do HTML-a maila — bez tego nazwa
+// z „<” rozjechałaby szablon.
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function invoiceLine(order: OrderWithItems) {
+  if (!order.companyName) return "";
+  return `<p style="font-size:14px;"><strong>Faktura VAT:</strong> ${escapeHtml(
+    [order.companyName, `NIP ${order.companyNip}`, order.companyAddress]
+      .filter(Boolean)
+      .join(", "),
+  )}</p>`;
+}
+
 function deliveryLine(order: OrderWithItems) {
   if (order.deliveryMethod === "paczkomat") {
     return `Paczkomat ${order.inpostPoint}`;
@@ -113,6 +132,7 @@ export async function sendOrderConfirmationEmail(order: OrderWithItems) {
       ${costRows(order)}
     </table>
     <p style="font-size:14px;"><strong>Adres dostawy:</strong> ${deliveryLine(order)}</p>
+    ${invoiceLine(order)}
     <p style="font-size:14px;"><strong>Płatność:</strong> ${order.paymentMethod}</p>
     <p style="font-size:14px;line-height:1.6;">
       Status zamówienia możesz śledzić w zakładce „Moje konto” → „Moje zamówienia”.

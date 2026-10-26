@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { CreditCard, Landmark, Lock, Smartphone } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import {
   formatInPostPoint,
@@ -9,12 +10,22 @@ import {
 } from "@/lib/delivery";
 import InPostGeowidget from "@/components/checkout/InPostGeowidget";
 import OrderSummary from "@/components/OrderSummary";
+import { isValidNip } from "@/lib/nip";
 import { createOrder } from "./actions";
 
 const DELIVERY_METHODS = [
   { id: "kurier", label: "Kurier InPost" },
   { id: "paczkomat", label: "Paczkomat InPost" },
 ] as const;
+
+const PAYMENT_METHODS = [
+  { label: "BLIK", Icon: Smartphone },
+  { label: "Przelew", Icon: Landmark },
+  { label: "Karta", Icon: CreditCard },
+] as const;
+
+const INPUT =
+  "w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none";
 
 export default function Kasa() {
   const { items, subtotal, clear } = useCart();
@@ -23,6 +34,10 @@ export default function Kasa() {
     useState<(typeof DELIVERY_METHODS)[number]["id"]>("kurier");
   const [point, setPoint] = useState<InPostPoint | null>(null);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [isCompany, setIsCompany] = useState(false);
+  // Przy kurierze adres firmy zwykle pokrywa się z adresem dostawy, więc
+  // domyślnie go kopiujemy; przy paczkomacie adresu dostawy nie ma.
+  const [sameAddress, setSameAddress] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,9 +51,26 @@ export default function Kasa() {
       return;
     }
 
-    setSubmitting(true);
-
     const formData = new FormData(formRef.current);
+    const field = (name: string) => String(formData.get(name) ?? "");
+
+    if (isCompany && !isValidNip(field("companyNip"))) {
+      setError("Sprawdź NIP — powinien mieć 10 cyfr.");
+      return;
+    }
+
+    const copyDelivery = delivery === "kurier" && sameAddress;
+    const company = isCompany
+      ? {
+          name: field("companyName"),
+          nip: field("companyNip"),
+          address: field(copyDelivery ? "address" : "companyAddress"),
+          postalCode: field(copyDelivery ? "postalCode" : "companyPostalCode"),
+          city: field(copyDelivery ? "city" : "companyCity"),
+        }
+      : null;
+
+    setSubmitting(true);
 
     try {
       const result = await createOrder({
@@ -52,6 +84,7 @@ export default function Kasa() {
         city: String(formData.get("city") ?? ""),
         inpostPoint: point ? formatInPostPoint(point) : "",
         acceptedTerms: formData.get("acceptTerms") === "on",
+        company,
         items: items.map(({ slug, size, quantity }) => ({ slug, size, quantity })),
         discountCode,
       });
@@ -212,16 +245,98 @@ export default function Kasa() {
           )}
         </fieldset>
 
+        <fieldset className="flex flex-col gap-4">
+          <legend className="mb-2 text-xs tracking-[0.3em] text-black/40">
+            FAKTURA
+          </legend>
+          <label className="flex cursor-pointer items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={isCompany}
+              onChange={(e) => setIsCompany(e.target.checked)}
+              className="h-4 w-4 shrink-0 accent-black"
+            />
+            Kupuję na firmę (faktura VAT)
+          </label>
+
+          {isCompany && (
+            <>
+              <input
+                name="companyName"
+                type="text"
+                required
+                autoComplete="organization"
+                placeholder="Nazwa firmy"
+                className={INPUT}
+              />
+              <input
+                name="companyNip"
+                type="text"
+                required
+                inputMode="numeric"
+                placeholder="NIP"
+                className={INPUT}
+              />
+              {delivery === "kurier" && (
+                <label className="flex cursor-pointer items-center gap-3 text-sm text-black/70">
+                  <input
+                    type="checkbox"
+                    checked={sameAddress}
+                    onChange={(e) => setSameAddress(e.target.checked)}
+                    className="h-4 w-4 shrink-0 accent-black"
+                  />
+                  Adres firmy taki sam jak adres dostawy
+                </label>
+              )}
+              {(delivery === "paczkomat" || !sameAddress) && (
+                <>
+                  <input
+                    name="companyAddress"
+                    type="text"
+                    required
+                    placeholder="Adres firmy"
+                    className={INPUT}
+                  />
+                  <div className="flex gap-4">
+                    <input
+                      name="companyPostalCode"
+                      type="text"
+                      required
+                      placeholder="Kod pocztowy"
+                      className={INPUT}
+                    />
+                    <input
+                      name="companyCity"
+                      type="text"
+                      required
+                      placeholder="Miasto"
+                      className={INPUT}
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </fieldset>
+
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-xs tracking-[0.3em] text-black/40">
             PŁATNOŚĆ
           </legend>
-          <p className="border border-black px-4 py-3 text-sm">
-            Płatność online HotPay
-            <span className="mt-1 block text-xs text-black/50">
-              BLIK, szybki przelew lub karta — po kliknięciu „Zapłać i zamów”
-              przejdziesz do bezpiecznej strony płatności.
-            </span>
+          <ul className="grid grid-cols-3 gap-3">
+            {PAYMENT_METHODS.map(({ label, Icon }) => (
+              <li
+                key={label}
+                className="flex flex-col items-center gap-2 border border-black/20 px-2 py-4 text-xs tracking-widest uppercase"
+              >
+                <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                {label}
+              </li>
+            ))}
+          </ul>
+          <p className="flex items-center gap-2 text-xs text-black/50">
+            <Lock aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+            Bezpieczna płatność online HotPay
           </p>
         </fieldset>
 

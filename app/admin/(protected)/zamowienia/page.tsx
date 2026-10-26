@@ -48,6 +48,12 @@ export default async function AdminZamowienia() {
                         .filter(Boolean)
                         .join(", ")}
                 </span>
+                {order.companyName && (
+                  <span className="text-black/70">
+                    Faktura: {order.companyName} · NIP {order.companyNip} ·{" "}
+                    {order.companyAddress}
+                  </span>
+                )}
                 <span>
                   {order.paymentMethod}
                   {order.paymentStatus !== "oplacone" && (
