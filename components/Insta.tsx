@@ -9,15 +9,8 @@ const DESCRIPTIONS = {
 } as const;
 
 export default async function Insta() {
-  // Brak tokenu, wygasły token albo awaria API dają null — wtedy zostaje kadr
-  // z repozytorium i sekcja wygląda dokładnie jak przedtem.
   const post = await getLatestInstagramPost();
 
-  // Kadr układa się pod proporcje posta (ten z repozytorium jest kwadratowy).
-  // Na mobile wypełnia całą szerokość, a pionowy reel przycinamy do 4:5 jak
-  // siatka Instagrama, żeby nie zajął półtora ekranu. Na desktopie panel ma
-  // stały rozmiar, a post stoi w nim w pełnych proporcjach na tle własnej,
-  // rozmytej kopii — dzięki temu wąski reel nie zostawia pustych pasów.
   const ratio = post?.aspectRatio ?? 1;
   const frameStyle = {
     "--ar-sm": Math.min(Math.max(ratio, 4 / 5), 1.91),

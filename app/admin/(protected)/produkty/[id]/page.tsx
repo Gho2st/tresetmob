@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
 import { prisma } from "@/lib/prisma";
 import { getSizeChartOptions } from "@/lib/size-charts";
+import { sortBySize } from "@/lib/sizes";
 import { updateProduct } from "../actions";
 
 type Params = { params: Promise<{ id: string }> };
@@ -25,7 +26,7 @@ export default async function EditProdukt({ params }: Params) {
       </h1>
       <ProductForm
         action={updateProduct.bind(null, product.id)}
-        product={product}
+        product={{ ...product, variants: sortBySize(product.variants) }}
         sizeCharts={sizeCharts}
       />
     </div>

@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { ORDER_STATUSES } from "@/lib/order-status";
+import { compareSizes } from "@/lib/sizes";
 
 const DAY = 24 * 60 * 60 * 1000;
 const TIME_ZONE = "Europe/Warsaw";
@@ -278,7 +279,12 @@ export async function getDashboardStats(period: PeriodKey) {
       days ?? 366,
     ),
     topProducts,
-    lowStock,
+    lowStock: lowStock.sort(
+      (a, b) =>
+        a.stock - b.stock ||
+        a.product.title.localeCompare(b.product.title, "pl") ||
+        compareSizes(a.size, b.size),
+    ),
     recentOrders: [...current].reverse().slice(0, 5),
   };
 }

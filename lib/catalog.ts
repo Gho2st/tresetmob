@@ -1,5 +1,6 @@
 import type { Product } from "@/lib/products";
 import { effectivePriceCents as effectivePrice } from "@/lib/price-history";
+import { compareSizes } from "@/lib/sizes";
 
 export const SORT_OPTIONS = [
   { value: "polecane", label: "Polecane" },
@@ -70,20 +71,6 @@ export function filterAndSortProducts(products: Product[], params: CatalogParams
     default:
       return result;
   }
-}
-
-const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-
-function compareSizes(a: string, b: string) {
-  const ia = SIZE_ORDER.indexOf(a.toUpperCase());
-  const ib = SIZE_ORDER.indexOf(b.toUpperCase());
-  if (ia !== -1 && ib !== -1) return ia - ib;
-  const na = Number(a);
-  const nb = Number(b);
-  if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-  if (ia !== -1) return -1;
-  if (ib !== -1) return 1;
-  return a.localeCompare(b, "pl");
 }
 
 /** Rozmiary do filtra — tylko te, które są gdziekolwiek na stanie. */
