@@ -3,7 +3,11 @@
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { formatPrice, type CartItem } from "@/lib/cart";
-import { findDiscount, discountAmount as calcDiscountAmount } from "@/lib/discounts";
+import {
+  discountAmount as calcDiscountAmount,
+  type Discount,
+} from "@/lib/discounts";
+import { checkDiscountCode } from "@/app/(site)/kasa/actions";
 import { SHOP_POLICY } from "@/lib/shop-policy";
 
 type OrderSummaryProps = {
@@ -21,15 +25,19 @@ export default function OrderSummary({
   children,
 }: OrderSummaryProps) {
   const [code, setCode] = useState("");
-  const [applied, setApplied] = useState<ReturnType<typeof findDiscount>>(null);
+  const [applied, setApplied] = useState<Discount | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   const discount = applied ? Math.round(calcDiscountAmount(subtotal, applied)) : 0;
   const total = Math.max(subtotal - discount, 0) + SHOP_POLICY.deliveryCostCents;
 
-  const handleApply = (e: React.FormEvent) => {
+  // Kody z newslettera są jednorazowe i leżą w bazie, więc pytamy serwer.
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = findDiscount(code);
+    setChecking(true);
+    const found = await checkDiscountCode(code).catch(() => null);
+    setChecking(false);
     if (!found) {
       setApplied(null);
       setError("Nieprawidłowy kod rabatowy");
@@ -88,6 +96,7 @@ export default function OrderSummary({
           />
           <button
             type="submit"
+            disabled={checking}
             className="shrink-0 border border-black/30 px-4 text-xs tracking-[0.15em] uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
           >
             Zastosuj

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SOCIAL_HANDLE, SOCIAL_LINKS } from "@/lib/social";
 import { SocialIcon } from "@/components/SocialIcons";
+import NewsletterForm from "@/components/NewsletterForm";
 
 const columns = [
   {
@@ -75,6 +76,20 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12 sm:px-12 md:flex-row md:items-start md:justify-between lg:px-20">
+          <div className="flex flex-col gap-3">
+            <span className="text-xs tracking-[0.3em] text-white/40">
+              NEWSLETTER
+            </span>
+            <p className="font-display text-3xl uppercase leading-none">
+              -10% na start
+            </p>
+          </div>
+          <NewsletterForm />
         </div>
       </div>
 

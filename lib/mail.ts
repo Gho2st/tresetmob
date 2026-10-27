@@ -29,7 +29,12 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendMail(to: string, subject: string, html: string) {
+async function sendMail(
+  to: string,
+  subject: string,
+  html: string,
+  headers?: Record<string, string>,
+) {
   // Wysyłka maila nie może wywrócić zamówienia/zmiany statusu — logujemy błąd
   // i lecimy dalej, zamiast rzucać wyjątek do wywołującej akcji.
   try {
@@ -38,9 +43,12 @@ async function sendMail(to: string, subject: string, html: string) {
       to,
       subject,
       html,
+      headers,
     });
+    return true;
   } catch (error) {
     console.error(`Nie udało się wysłać maila do ${to}:`, error);
+    return false;
   }
 }
 
@@ -166,5 +174,98 @@ export async function sendOrderStatusEmail(order: OrderWithItems) {
     order.customerEmail,
     `Status zamówienia ${order.number}: ${order.status}`,
     emailShell("Aktualizacja statusu zamówienia", body),
+  );
+}
+
+// ---------- newsletter ----------
+
+function button(href: string, label: string) {
+  return `<a href="${href}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;padding:14px 28px;font-size:13px;letter-spacing:0.15em;text-transform:uppercase;">${label}</a>`;
+}
+
+export type UnsubscribeLinks = {
+  /** strona z przyciskiem — link w treści maila */
+  pageUrl: string;
+  /** endpoint na POST z „wypisz się” w Gmailu/Apple Mail (RFC 8058) */
+  oneClickUrl: string;
+};
+
+function unsubscribeHeaders(links: UnsubscribeLinks) {
+  return {
+    "List-Unsubscribe": `<${links.oneClickUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}
+
+function unsubscribeFooter(unsubscribeUrl: string) {
+  return `<p style="font-size:12px;line-height:1.6;color:#888;margin-top:32px;">
+    Dostajesz tę wiadomość, bo zapisałeś(-aś) się do newslettera Tresetmob.
+    <a href="${unsubscribeUrl}" style="color:#888;">Wypisz się</a>
+  </p>`;
+}
+
+export function sendNewsletterConfirmEmail(to: string, confirmUrl: string) {
+  const body = `
+    <p style="font-size:14px;line-height:1.6;">
+      Kliknij poniżej, żeby potwierdzić zapis do newslettera Tresetmob.
+      Po potwierdzeniu wyślemy Ci kod -10% na pierwsze zakupy.
+    </p>
+    <p style="margin:24px 0;">${button(confirmUrl, "Potwierdzam zapis")}</p>
+    <p style="font-size:12px;line-height:1.6;color:#888;">
+      Jeśli to nie Ty — zignoruj tę wiadomość, nie zapiszemy Cię bez potwierdzenia.
+    </p>`;
+  return sendMail(
+    to,
+    "Potwierdź zapis do newslettera — Tresetmob",
+    emailShell("Jeszcze jeden klik", body),
+  );
+}
+
+export function sendNewsletterWelcomeEmail(
+  to: string,
+  code: string,
+  unsubscribe: UnsubscribeLinks,
+) {
+  const body = `
+    <p style="font-size:14px;line-height:1.6;">
+      Dzięki za zapis! Oto Twój jednorazowy kod -10% na zakupy w sklepie:
+    </p>
+    <p style="margin:24px 0;font-size:24px;font-weight:bold;letter-spacing:0.15em;border:1px dashed #111;padding:16px;text-align:center;">${code}</p>
+    <p style="font-size:14px;line-height:1.6;">Wpisz go w koszyku przy składaniu zamówienia.</p>
+    ${unsubscribeFooter(unsubscribe.pageUrl)}`;
+  return sendMail(
+    to,
+    "Twój kod -10% — Tresetmob",
+    emailShell("Witaj w newsletterze", body),
+    unsubscribeHeaders(unsubscribe),
+  );
+}
+
+/**
+ * Wiadomość z panelu. Treść to zwykły tekst — puste linie dzielą akapity —
+ * więc escapujemy ją i sami składamy HTML, zamiast przyjmować go z formularza.
+ */
+export function sendNewsletterCampaignEmail(
+  to: string,
+  subject: string,
+  text: string,
+  unsubscribe: UnsubscribeLinks,
+) {
+  const paragraphs = text
+    .trim()
+    .split(/\n\s*\n/)
+    .map(
+      (p) =>
+        `<p style="font-size:14px;line-height:1.7;">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`,
+    )
+    .join("");
+  return sendMail(
+    to,
+    subject,
+    emailShell(
+      escapeHtml(subject),
+      paragraphs + unsubscribeFooter(unsubscribe.pageUrl),
+    ),
+    unsubscribeHeaders(unsubscribe),
   );
 }

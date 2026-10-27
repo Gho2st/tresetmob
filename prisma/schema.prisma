@@ -101,6 +101,8 @@ model Order {
   paymentRef     String?
   subtotalCents  Int
   discountCents  Int         @default(0)
+  // Wpisany kod — po nim webhook oznacza jednorazowy kod z newslettera jako zużyty.
+  discountCode   String?
   totalCents     Int
   status         String      @default("nowe")
   items          OrderItem[]
@@ -151,4 +153,30 @@ model SizeChart {
   products     Product[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+// Zapisani do newslettera. Zapis wymaga potwierdzenia linkiem z maila
+// (double opt-in), dopiero wtedy wpis jest „aktywny” i dostaje kod rabatowy.
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  status         String    @default("oczekuje") // "oczekuje" | "aktywny" | "wypisany"
+  source         String // "stopka" | "kasa"
+  // Sekret w linkach potwierdzenia i wypisu — zastępuje logowanie.
+  token          String    @unique @default(cuid())
+  // Jednorazowy kod -10% wydawany po potwierdzeniu zapisu.
+  discountCode   String?   @unique
+  discountUsedAt DateTime?
+  createdAt      DateTime  @default(now())
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+}
+
+// Historia wysłanych wiadomości — panel pokazuje, co i do ilu osób poszło.
+model NewsletterCampaign {
+  id         String   @id @default(cuid())
+  subject    String
+  body       String
+  recipients Int
+  sentAt     DateTime @default(now())
 }

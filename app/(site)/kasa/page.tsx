@@ -84,6 +84,7 @@ export default function Kasa() {
         city: String(formData.get("city") ?? ""),
         inpostPoint: point ? formatInPostPoint(point) : "",
         acceptedTerms: formData.get("acceptTerms") === "on",
+        newsletter: formData.get("newsletter") === "on",
         company,
         items: items.map(({ slug, size, quantity }) => ({ slug, size, quantity })),
         discountCode,
@@ -365,6 +366,18 @@ export default function Kasa() {
               Politykę prywatności
             </Link>
             .
+          </span>
+        </label>
+        {/* Zgoda marketingowa musi być osobna i domyślnie odznaczona (RODO). */}
+        <label className="-mt-8 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-black/70">
+          <input
+            name="newsletter"
+            type="checkbox"
+            className="mt-1 h-4 w-4 shrink-0 accent-black"
+          />
+          <span>
+            Chcę dostawać newsletter z nowościami i kod -10% na kolejne
+            zakupy. Wyślemy mail z linkiem potwierdzającym.
           </span>
         </label>
       </form>

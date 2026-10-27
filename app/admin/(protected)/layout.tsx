@@ -57,6 +57,9 @@ export default async function AdminLayout({
           <Link href="/admin/zamowienia" className="text-black/70 hover:text-black">
             Zamówienia
           </Link>
+          <Link href="/admin/newsletter" className="text-black/70 hover:text-black">
+            Newsletter
+          </Link>
           <Link href="/admin/hero" className="text-black/70 hover:text-black">
             Hero
           </Link>

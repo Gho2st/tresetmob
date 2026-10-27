@@ -1,7 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { findDiscount, discountAmount } from "@/lib/discounts";
+import { findDiscount, discountAmount, type Discount } from "@/lib/discounts";
+import { findNewsletterDiscount, subscribe } from "@/lib/newsletter";
+import { after } from "next/server";
 import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
 import { SHOP_POLICY } from "@/lib/shop-policy";
 import { auth } from "@/auth";
@@ -24,6 +26,7 @@ type CreateOrderInput = {
   city?: string;
   inpostPoint?: string;
   acceptedTerms: boolean;
+  newsletter?: boolean;
   // Obecne tylko przy zakupie na firmę (faktura VAT).
   company?: {
     name: string;
@@ -35,6 +38,19 @@ type CreateOrderInput = {
   items: OrderLine[];
   discountCode?: string | null;
 };
+
+/** Stałe kody z lib/discounts.ts albo jednorazowy kod z newslettera. */
+async function resolveDiscount(code: string): Promise<Discount | null> {
+  return findDiscount(code) ?? (await findNewsletterDiscount(code));
+}
+
+/**
+ * Sprawdzenie kodu w podsumowaniu koszyka. Kody z newslettera są w bazie,
+ * więc nie da się ich już sprawdzić samą listą po stronie przeglądarki.
+ */
+export async function checkDiscountCode(code: string) {
+  return resolveDiscount(code);
+}
 
 // Błąd, którego treść można pokazać klientowi. Zwykłe `throw` z Server Action
 // Next na produkcji zamienia na ogólny komunikat, więc te zwracamy jako wartość.
@@ -121,7 +137,9 @@ async function placeOrder(input: CreateOrderInput) {
 
   const items = await priceLines(input.items);
   const subtotalCents = items.reduce((sum, i) => sum + i.priceCents * i.quantity, 0);
-  const discount = input.discountCode ? findDiscount(input.discountCode) : null;
+  const discount = input.discountCode
+    ? await resolveDiscount(input.discountCode)
+    : null;
   const discountCents = discount ? Math.round(discountAmount(subtotalCents, discount)) : 0;
   const totalCents = subtotalCents - discountCents + SHOP_POLICY.deliveryCostCents;
 
@@ -169,10 +187,17 @@ async function placeOrder(input: CreateOrderInput) {
       paymentStatus: "oczekuje",
       subtotalCents,
       discountCents,
+      discountCode: discount?.code,
       totalCents,
       items: { create: items },
     },
   });
+
+  // Zapis z checkboxa w kasie idzie tą samą drogą co ze stopki — z mailem
+  // potwierdzającym, bo zgoda musi być potwierdzona. Klient nie czeka na SMTP.
+  if (input.newsletter) {
+    after(() => subscribe(input.email, "kasa"));
+  }
 
   return { redirectUrl: init.url };
 }

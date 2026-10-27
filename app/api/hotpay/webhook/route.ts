@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { verifyHotpayNotification, type HotpayNotification } from "@/lib/hotpay";
 import { sendOrderConfirmationEmail } from "@/lib/mail";
+import { markNewsletterCodeUsed } from "@/lib/newsletter";
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
     });
 
     if (paid) {
+      // Jednorazowy kod z newslettera zużywa dopiero opłacone zamówienie —
+      // porzucona płatność nie może go „spalić”.
+      await markNewsletterCodeUsed(order.discountCode);
       after(() => sendOrderConfirmationEmail({ ...order, paymentStatus: "oplacone" }));
     }
   } else if (fields.STATUS === "FAILURE") {
