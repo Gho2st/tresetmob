@@ -5,10 +5,10 @@ import Image from "next/image";
 import { formatPrice, type CartItem } from "@/lib/cart";
 import {
   discountAmount as calcDiscountAmount,
+  deliveryCost,
   type Discount,
 } from "@/lib/discounts";
 import { checkDiscountCode } from "@/app/(site)/kasa/actions";
-import { SHOP_POLICY } from "@/lib/shop-policy";
 
 type OrderSummaryProps = {
   subtotal: number;
@@ -30,7 +30,8 @@ export default function OrderSummary({
   const [checking, setChecking] = useState(false);
 
   const discount = applied ? Math.round(calcDiscountAmount(subtotal, applied)) : 0;
-  const total = Math.max(subtotal - discount, 0) + SHOP_POLICY.deliveryCostCents;
+  const delivery = deliveryCost(applied);
+  const total = Math.max(subtotal - discount, 0) + delivery;
 
   // Kody z newslettera są jednorazowe i leżą w bazie, więc pytamy serwer.
   const handleApply = async (e: React.FormEvent) => {
@@ -114,7 +115,7 @@ export default function OrderSummary({
         <span className="text-black/50">Suma częściowa</span>
         <span>{formatPrice(subtotal)}</span>
       </div>
-      {applied && (
+      {discount > 0 && (
         <div className="flex items-center justify-between text-sm">
           <span className="text-black/50">Rabat</span>
           <span>-{formatPrice(discount)}</span>
@@ -123,7 +124,7 @@ export default function OrderSummary({
       <div className="flex items-center justify-between text-sm">
         <span className="text-black/50">Dostawa</span>
         <span className="text-black/50">
-          {formatPrice(SHOP_POLICY.deliveryCostCents)}
+          {formatPrice(delivery)}
         </span>
       </div>
 

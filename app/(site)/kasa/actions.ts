@@ -1,11 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { findDiscount, discountAmount, type Discount } from "@/lib/discounts";
+import {
+  findDiscount,
+  discountAmount,
+  deliveryCost,
+  type Discount,
+} from "@/lib/discounts";
 import { findNewsletterDiscount, subscribe } from "@/lib/newsletter";
 import { after } from "next/server";
 import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
-import { SHOP_POLICY } from "@/lib/shop-policy";
 import { auth } from "@/auth";
 import { findOrCreateUserId } from "@/lib/users";
 import { isValidNip, normalizeNip } from "@/lib/nip";
@@ -141,7 +145,7 @@ async function placeOrder(input: CreateOrderInput) {
     ? await resolveDiscount(input.discountCode)
     : null;
   const discountCents = discount ? Math.round(discountAmount(subtotalCents, discount)) : 0;
-  const totalCents = subtotalCents - discountCents + SHOP_POLICY.deliveryCostCents;
+  const totalCents = subtotalCents - discountCents + deliveryCost(discount);
 
   const number = generateOrderNumber();
 
