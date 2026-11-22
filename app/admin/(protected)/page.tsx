@@ -9,6 +9,7 @@ import {
   type Bucket,
   type PeriodKey,
 } from "@/lib/stats";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 type Props = { searchParams: Promise<{ okres?: string }> };
 
@@ -20,10 +21,7 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-          Podsumowanie
-        </h1>
+      <AdminPageHeader title="Podsumowanie">
         <nav
           aria-label="Okres"
           className="flex flex-wrap border border-black/15 text-xs tracking-widest uppercase"
@@ -43,7 +41,7 @@ export default async function AdminPodsumowanie({ searchParams }: Props) {
             </Link>
           ))}
         </nav>
-      </div>
+      </AdminPageHeader>
 
       {/* ---------- liczby ---------- */}
       <section className="grid grid-cols-2 border-t border-l border-black/10 lg:grid-cols-4">

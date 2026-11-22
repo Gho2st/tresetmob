@@ -4,23 +4,21 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import PriceTag from "@/components/PriceTag";
 import { deleteProduct, moveProduct } from "./actions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 export default async function AdminProdukty() {
   const products = await getProducts();
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-          Produkty
-        </h1>
+      <AdminPageHeader title="Produkty">
         <Link
           href="/admin/produkty/nowy"
           className="border border-black/30 px-5 py-2.5 text-sm tracking-widest uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
         >
           + Dodaj produkt
         </Link>
-      </div>
+      </AdminPageHeader>
 
       {products.length === 0 ? (
         <p className="text-sm text-black/50">

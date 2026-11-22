@@ -2,18 +2,22 @@ import Image from "next/image";
 import { getAllOrders } from "@/lib/orders";
 import { formatPrice } from "@/lib/cart";
 import OrderStatusSelect from "./OrderStatusSelect";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+
+const PAYMENT_BADGE: Record<string, { label: string; className: string }> = {
+  oplacone: { label: "Opłacone", className: "border-emerald-700/40 bg-emerald-50 text-emerald-800" },
+  oczekuje: { label: "Oczekuje na płatność", className: "border-amber-600/40 bg-amber-50 text-amber-800" },
+  nieudane: { label: "Płatność nieudana", className: "border-red-700/40 bg-red-50 text-red-800" },
+};
 
 export default async function AdminZamowienia() {
   const orders = await getAllOrders();
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-          Zamówienia
-        </h1>
+      <AdminPageHeader title="Zamówienia">
         <span className="text-sm text-black/40">{orders.length} zamówień</span>
-      </div>
+      </AdminPageHeader>
 
       {orders.length === 0 ? (
         <p className="text-sm text-black/50">Brak zamówień.</p>
@@ -27,12 +31,22 @@ export default async function AdminZamowienia() {
                     {order.number}
                   </span>
                   <span className="text-xs text-black/40">
-                    {order.createdAt.toLocaleDateString("pl-PL", {
+                    {order.createdAt.toLocaleString("pl-PL", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "Europe/Warsaw",
                     })}
                   </span>
+                  {PAYMENT_BADGE[order.paymentStatus] && (
+                    <span
+                      className={`border px-2 py-0.5 text-[10px] tracking-widest uppercase ${PAYMENT_BADGE[order.paymentStatus].className}`}
+                    >
+                      {PAYMENT_BADGE[order.paymentStatus].label}
+                    </span>
+                  )}
                 </div>
                 <OrderStatusSelect orderId={order.id} status={order.status} />
               </div>
@@ -56,39 +70,33 @@ export default async function AdminZamowienia() {
                 )}
                 <span>
                   {order.paymentMethod}
-                  {order.paymentStatus !== "oplacone" && (
-                    <span
-                      className={`ml-2 border px-1.5 py-0.5 text-[10px] tracking-widest uppercase ${
-                        order.paymentStatus === "nieudane"
-                          ? "border-red-700 text-red-700"
-                          : "border-amber-600 text-amber-700"
-                      }`}
-                    >
-                      {order.paymentStatus === "nieudane"
-                        ? "Płatność nieudana"
-                        : "Oczekuje na płatność"}
-                    </span>
-                  )}
+                  {order.paymentRef && <> · {order.paymentRef}</>}
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              <ul className="flex flex-wrap gap-3 sm:gap-4">
                 {order.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="relative h-14 w-14 shrink-0 overflow-hidden bg-neutral-100"
-                    title={`${item.title} (${item.size}) × ${item.quantity}`}
-                  >
-                    <Image
-                      src={item.image}
-                      alt=""
-                      fill
-                      sizes="56px"
-                      className="object-contain"
-                    />
-                  </div>
+                  <li key={item.id} className="flex items-center gap-3 border border-black/10 p-2 pr-4">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-neutral-100">
+                      <Image
+                        src={item.image}
+                        alt=""
+                        fill
+                        sizes="48px"
+                        className="object-contain"
+                      />
+                    </div>
+                    <span className="flex flex-col text-xs">
+                      <span className="max-w-[22ch] truncate font-semibold uppercase">
+                        {item.title}
+                      </span>
+                      <span className="text-black/50">
+                        {item.size} · {item.quantity} × {formatPrice(item.priceCents)}
+                      </span>
+                    </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-black/40">

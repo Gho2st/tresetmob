@@ -1,6 +1,7 @@
 import { SessionProvider } from "next-auth/react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import MaintenanceBanner from "@/components/MaintenanceBanner";
 import { CartProvider } from "@/components/CartProvider";
 
 // Wspólny szkielet sklepu — używany przez app/(site)/layout.tsx oraz app/not-found.tsx,
@@ -10,6 +11,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <CartProvider>
         <Nav />
+        <MaintenanceBanner />
         <main className="flex-1">{children}</main>
         <Footer />
       </CartProvider>

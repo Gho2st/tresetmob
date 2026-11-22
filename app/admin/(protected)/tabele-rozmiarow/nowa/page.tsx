@@ -1,12 +1,14 @@
 import SizeChartForm from "@/components/admin/SizeChartForm";
 import { createSizeChart } from "../actions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 export default function NowaTabelaRozmiarow() {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-        Nowa tabela rozmiarów
-      </h1>
+      <AdminPageHeader
+        title="Nowa tabela rozmiarów"
+        back={{ href: "/admin/tabele-rozmiarow", label: "Tabele rozmiarów" }}
+      />
       <SizeChartForm action={createSizeChart} />
     </div>
   );

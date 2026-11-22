@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import CampaignForm from "./CampaignForm";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 // Wysyłka idzie mail po mailu w ramach Server Action z tej strony, więc
 // funkcja musi móc pożyć dłużej niż domyślne kilkanaście sekund.
@@ -35,17 +36,14 @@ export default async function AdminNewsletter() {
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-          Newsletter
-        </h1>
+      <AdminPageHeader title="Newsletter">
         <a
           href="/admin/newsletter/eksport"
           className="border border-black/20 px-4 py-2 text-xs tracking-widest uppercase transition-colors hover:border-black"
         >
           Eksport CSV
         </a>
-      </div>
+      </AdminPageHeader>
 
       <section className="grid grid-cols-2 border-t border-l border-black/10 lg:grid-cols-4">
         {[

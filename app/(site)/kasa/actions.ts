@@ -13,6 +13,8 @@ import { initHotpayPayment, siteUrl, type HotpayRedirect } from "@/lib/hotpay";
 import { auth } from "@/auth";
 import { findOrCreateUserId } from "@/lib/users";
 import { isValidNip, normalizeNip } from "@/lib/nip";
+import { isAdminEmail } from "@/lib/admin-credentials";
+import { getShopSettings } from "@/lib/shop-settings";
 
 // Z przeglądarki przyjmujemy tylko CO klient kupuje (slug, rozmiar, ilość) i
 // jaki kod wpisał. Ceny, rabat i sumę liczy serwer z bazy — inaczej podmieniony
@@ -106,6 +108,11 @@ async function priceLines(lines: OrderLine[]) {
 }
 
 async function placeOrder(input: CreateOrderInput) {
+  // Strona kasy też to sprawdza, ale akcję da się wywołać z pominięciem strony.
+  const settings = await getShopSettings();
+  if (settings.maintenance && !isAdminEmail((await auth())?.user?.email)) {
+    throw new CheckoutError(settings.maintenanceMessage);
+  }
   if (!input.email || !input.phone || !input.firstName || !input.lastName) {
     throw new CheckoutError("Uzupełnij dane kontaktowe.");
   }

@@ -3,23 +3,21 @@ import Link from "next/link";
 import { getSizeCharts } from "@/lib/size-charts";
 import { DEFAULT_SIZE_CHART_ILLUSTRATION } from "@/lib/size-chart-defaults";
 import { deleteSizeChart } from "./actions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 export default async function TabeleRozmiarow() {
   const charts = await getSizeCharts();
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl tracking-tight uppercase sm:text-4xl">
-          Tabele rozmiarów
-        </h1>
+      <AdminPageHeader title="Tabele rozmiarów">
         <Link
           href="/admin/tabele-rozmiarow/nowa"
           className="border border-black/30 px-5 py-2.5 text-sm tracking-widest uppercase transition-colors hover:border-black hover:bg-black hover:text-white"
         >
           + Dodaj tabelę
         </Link>
-      </div>
+      </AdminPageHeader>
 
       <p className="max-w-xl text-sm text-black/50">
         Tabelę przypisujesz produktom w ich formularzu. Zmiana tabeli od razu

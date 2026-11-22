@@ -180,3 +180,13 @@ model NewsletterCampaign {
   recipients Int
   sentAt     DateTime @default(now())
 }
+
+// Ustawienia sklepu przełączane z panelu, bez redeployu — jeden wiersz "singleton".
+model ShopSettings {
+  id                 String   @id @default("singleton")
+  // Tryb prac technicznych: pasek z informacją na całej stronie i zablokowana
+  // kasa (poza adminem, który musi móc dalej testować płatności).
+  maintenance        Boolean  @default(false)
+  maintenanceMessage String?
+  updatedAt          DateTime @updatedAt
+}
