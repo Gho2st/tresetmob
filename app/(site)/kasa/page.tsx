@@ -365,7 +365,10 @@ export default function Kasa() {
             >
               Politykę prywatności
             </Link>
-            .
+            .{" "}
+            <span className="text-xs text-black/40">
+              (wymagane, bez tego nie złożysz zamówienia)
+            </span>
           </span>
         </label>
         {/* Zgoda marketingowa musi być osobna i domyślnie odznaczona (RODO). */}
@@ -377,7 +380,10 @@ export default function Kasa() {
           />
           <span>
             Chcę dostawać newsletter z nowościami i kod -10% na kolejne
-            zakupy. Wyślemy mail z linkiem potwierdzającym.
+            zakupy. Wyślemy mail z linkiem potwierdzającym.{" "}
+            <span className="text-xs text-black/40">
+              (opcjonalne, możesz wypisać się w każdej chwili)
+            </span>
           </span>
         </label>
       </form>
