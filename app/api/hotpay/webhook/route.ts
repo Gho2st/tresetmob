@@ -21,6 +21,13 @@ export async function POST(request: Request) {
     return new NextResponse("order not found", { status: 404 });
   }
 
+  // Bez hasła HotPay (patrz lib/hotpay.ts) to jedyna kontrola poza SEKRETEM:
+  // notyfikacja musi dotyczyć dokładnie tej kwoty, na którą wystawiliśmy płatność.
+  const paidCents = Math.round(Number.parseFloat(fields.KWOTA ?? "") * 100);
+  if (fields.STATUS === "SUCCESS" && paidCents !== order.totalCents) {
+    return new NextResponse("amount mismatch", { status: 400 });
+  }
+
   if (fields.STATUS === "SUCCESS") {
     const paid = await prisma.$transaction(async (tx) => {
       // Warunkowy update zamiast sprawdzenia w JS — HotPay potrafi powtórzyć

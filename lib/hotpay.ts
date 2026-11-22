@@ -16,6 +16,13 @@ function requireEnv(name: string) {
   return value;
 }
 
+// Hasło z ustawień punktu płatności podpisuje zapytania i notyfikacje. Na razie
+// go nie mamy, więc jest opcjonalne — bez niego notyfikację weryfikuje tylko
+// SEKRET plus zgodność kwoty z zamówieniem (webhook). Docelowo: uzupełnić.
+function optionalHaslo() {
+  return process.env.HOTPAY_HASLO?.trim() || null;
+}
+
 export function siteUrl() {
   if (process.env.SITE_URL) return process.env.SITE_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
@@ -38,12 +45,9 @@ export async function initHotpayPayment(
   input: InitHotpayPaymentInput,
 ): Promise<InitHotpayPaymentResult> {
   const sekret = requireEnv("HOTPAY_SEKRET");
-  const haslo = requireEnv("HOTPAY_HASLO");
+  const haslo = optionalHaslo();
 
   const kwota = (input.amountCents / 100).toFixed(2);
-  const hash = sha256(
-    [haslo, kwota, input.description, input.returnUrl, input.orderNumber, sekret].join(";"),
-  );
 
   const body = new FormData();
   body.set("TYP", "INIT");
@@ -53,7 +57,14 @@ export async function initHotpayPayment(
   body.set("ADRES_WWW", input.returnUrl);
   body.set("ID_ZAMOWIENIA", input.orderNumber);
   body.set("EMAIL", input.email);
-  body.set("HASH", hash);
+  if (haslo) {
+    body.set(
+      "HASH",
+      sha256(
+        [haslo, kwota, input.description, input.returnUrl, input.orderNumber, sekret].join(";"),
+      ),
+    );
+  }
 
   let response: Response;
   try {
@@ -90,10 +101,11 @@ export type HotpayNotification = {
 };
 
 export function verifyHotpayNotification(fields: HotpayNotification): boolean {
-  const haslo = requireEnv("HOTPAY_HASLO");
+  const haslo = optionalHaslo();
   const sekret = requireEnv("HOTPAY_SEKRET");
 
   if (fields.SEKRET !== sekret) return false;
+  if (!haslo) return true;
   if (!fields.HASH) return false;
 
   const expected = sha256(
