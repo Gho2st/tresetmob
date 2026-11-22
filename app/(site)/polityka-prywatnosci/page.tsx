@@ -15,7 +15,7 @@ const SECTIONS = [
     title: "2. Jakie dane zbieramy",
     body: [
       "Dane podawane przy składaniu Zamówienia: imię i nazwisko, adres e-mail, numer telefonu, adres dostawy lub wybrany Paczkomat InPost, a przy zakupie na firmę także nazwa firmy, NIP i adres firmy potrzebne do wystawienia faktury VAT.",
-      "Dane konta: adres e-mail, imię i nazwisko udostępnione przez Google lub Facebook przy logowaniu, rodzaj logowania oraz daty logowań.",
+      "Dane konta: adres e-mail, imię i nazwisko udostępnione przez Google przy logowaniu, rodzaj logowania oraz daty logowań.",
       "Dane subskrybenta newslettera: adres e-mail, źródło zapisu (formularz w stopce lub w kasie), daty zapisu, potwierdzenia i ewentualnego wypisania się, a także przydzielony kod rabatowy i informacja o jego wykorzystaniu.",
       "Dane podawane przy zwrocie, wymianie lub reklamacji: dane z formularza zwrotu, w tym numer rachunku bankowego, jeśli zostanie wskazany.",
       "Dane techniczne: adres IP, informacje o urządzeniu i przeglądarce, zbierane automatycznie w celu prawidłowego działania Sklepu.",
@@ -41,7 +41,7 @@ const SECTIONS = [
   {
     title: "5. Odbiorcy danych",
     body: [
-      "Dane mogą być udostępniane podmiotom, które pomagają prowadzić Sklep: dostawcy hostingu (Vercel), bazy danych (Neon), operatorowi płatności online, firmie InPost w celu realizacji dostawy, dostawcy poczty e-mail w celu wysyłki wiadomości o Zamówieniu i newslettera oraz Google i Meta (Facebook) w zakresie logowania do konta.",
+      "Dane mogą być udostępniane podmiotom, które pomagają prowadzić Sklep: dostawcy hostingu (Vercel), bazy danych (Neon), operatorowi płatności online, firmie InPost w celu realizacji dostawy, dostawcy poczty e-mail w celu wysyłki wiadomości o Zamówieniu i newslettera oraz Google w zakresie logowania do konta.",
       "Dane nie są przekazywane poza Europejski Obszar Gospodarczy poza przypadkami wynikającymi z lokalizacji ww. dostawców usług, którzy zapewniają zgodność z RODO.",
     ],
   },

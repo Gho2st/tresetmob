@@ -9,9 +9,12 @@ import { recordSignIn } from "@/lib/users";
 // dokładamy Facebooka tylko wtedy, gdy jest skonfigurowany. Strona logowania
 // czyta tę samą flagę i po prostu nie pokazuje przycisku, którego nie ma czym
 // obsłużyć.
-export const FACEBOOK_ENABLED = Boolean(
-  process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET,
-);
+//
+// TYMCZASOWO WYŁĄCZONE: logowanie klientów przez Facebooka wymaga od Meta
+// weryfikacji firmy, której na razie nie da się przejść. Żeby przywrócić,
+// usuń `false &&` (i dopisz Facebooka z powrotem w polityce prywatności).
+export const FACEBOOK_ENABLED =
+  false && Boolean(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET);
 
 export const {
   handlers: { GET, POST },
