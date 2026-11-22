@@ -40,6 +40,7 @@ export default function Kasa() {
   const [sameAddress, setSameAddress] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [termsMissing, setTermsMissing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,6 +347,16 @@ export default function Kasa() {
             name="acceptTerms"
             type="checkbox"
             required
+            aria-describedby="terms-error"
+            // Zamiast dymka przeglądarki pokazujemy własny komunikat pod zgodą.
+            onInvalid={(e) => {
+              e.preventDefault();
+              setTermsMissing(true);
+              e.currentTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+            onChange={(e) => {
+              if (e.currentTarget.checked) setTermsMissing(false);
+            }}
             className="mt-1 h-4 w-4 shrink-0 accent-black"
           />
           <span>
@@ -366,11 +377,16 @@ export default function Kasa() {
               Politykę prywatności
             </Link>
             .{" "}
-            <span className="text-xs text-black/40">
-              (wymagane, bez tego nie złożysz zamówienia)
+            <span aria-hidden="true" className="text-red-700">
+              *
             </span>
           </span>
         </label>
+        {termsMissing && (
+          <p id="terms-error" className="-mt-8 pl-7 text-xs text-red-700">
+            Zaakceptuj regulamin i politykę prywatności, żeby złożyć zamówienie.
+          </p>
+        )}
         {/* Zgoda marketingowa musi być osobna i domyślnie odznaczona (RODO). */}
         <label className="-mt-8 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-black/70">
           <input
@@ -380,12 +396,12 @@ export default function Kasa() {
           />
           <span>
             Chcę dostawać newsletter z nowościami i kod -10% na kolejne
-            zakupy. Wyślemy mail z linkiem potwierdzającym.{" "}
-            <span className="text-xs text-black/40">
-              (opcjonalne, możesz wypisać się w każdej chwili)
-            </span>
+            zakupy. Wyślemy mail z linkiem potwierdzającym.
           </span>
         </label>
+        <p className="-mt-8 text-xs text-black/40">
+          <span className="text-red-700">*</span> Pole wymagane
+        </p>
       </form>
 
       <div className="w-full shrink-0 lg:w-80">
