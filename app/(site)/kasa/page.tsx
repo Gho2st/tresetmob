@@ -53,7 +53,15 @@ export default function Kasa() {
     }
 
     const formData = new FormData(formRef.current);
-    const field = (name: string) => String(formData.get(name) ?? "");
+    const field = (name: string) => String(formData.get(name) ?? "").trim();
+
+    // Ulicę, numer domu i lokal zbieramy osobno, ale zamówienie trzyma jeden
+    // adres — składamy go w zwykłym polskim zapisie „Długa 12/3”.
+    const composeAddress = (street: string, building: string, apartment: string) => {
+      const number = field(building) + (field(apartment) ? `/${field(apartment)}` : "");
+      return [field(street), number].filter(Boolean).join(" ");
+    };
+    const address = composeAddress("street", "building", "apartment");
 
     if (isCompany && !isValidNip(field("companyNip"))) {
       setError("Sprawdź NIP — powinien mieć 10 cyfr.");
@@ -65,7 +73,7 @@ export default function Kasa() {
       ? {
           name: field("companyName"),
           nip: field("companyNip"),
-          address: field(copyDelivery ? "address" : "companyAddress"),
+          address: copyDelivery ? address : composeAddress("companyStreet", "companyBuilding", "companyApartment"),
           postalCode: field(copyDelivery ? "postalCode" : "companyPostalCode"),
           city: field(copyDelivery ? "city" : "companyCity"),
         }
@@ -80,7 +88,7 @@ export default function Kasa() {
         firstName: String(formData.get("firstName") ?? ""),
         lastName: String(formData.get("lastName") ?? ""),
         deliveryMethod: delivery,
-        address: String(formData.get("address") ?? ""),
+        address,
         postalCode: String(formData.get("postalCode") ?? ""),
         city: String(formData.get("city") ?? ""),
         inpostPoint: point ? formatInPostPoint(point) : "",
@@ -219,12 +227,28 @@ export default function Kasa() {
           {delivery === "kurier" ? (
             <>
               <input
-                name="address"
+                name="street"
                 type="text"
                 required
-                placeholder="Adres"
+                autoComplete="address-line1"
+                placeholder="Ulica"
                 className="border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none"
               />
+              <div className="flex gap-4">
+                <input
+                  name="building"
+                  type="text"
+                  required
+                  placeholder="Nr domu"
+                  className="w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none"
+                />
+                <input
+                  name="apartment"
+                  type="text"
+                  placeholder="Nr lokalu (opcjonalnie)"
+                  className="w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none"
+                />
+              </div>
               <div className="flex gap-4">
                 <input
                   name="postalCode"
@@ -293,12 +317,27 @@ export default function Kasa() {
               {(delivery === "paczkomat" || !sameAddress) && (
                 <>
                   <input
-                    name="companyAddress"
+                    name="companyStreet"
                     type="text"
                     required
-                    placeholder="Adres firmy"
+                    placeholder="Ulica"
                     className={INPUT}
                   />
+                  <div className="flex gap-4">
+                    <input
+                      name="companyBuilding"
+                      type="text"
+                      required
+                      placeholder="Nr domu"
+                      className={INPUT}
+                    />
+                    <input
+                      name="companyApartment"
+                      type="text"
+                      placeholder="Nr lokalu (opcjonalnie)"
+                      className={INPUT}
+                    />
+                  </div>
                   <div className="flex gap-4">
                     <input
                       name="companyPostalCode"
