@@ -17,8 +17,10 @@ function requireEnv(name: string) {
 }
 
 // Hasło z ustawień punktu płatności podpisuje zapytania i notyfikacje. Na razie
-// go nie mamy, więc jest opcjonalne — bez niego notyfikację weryfikuje tylko
-// SEKRET plus zgodność kwoty z zamówieniem (webhook). Docelowo: uzupełnić.
+// go nie mamy, więc jest opcjonalne — bez niego płatność idzie wariantem
+// "API bez walidacji" (formularz z przeglądarki), a notyfikację weryfikuje tylko
+// SEKRET plus zgodność kwoty z zamówieniem (webhook). TYMCZASOWE — po dodaniu
+// HOTPAY_HASLO wszystko samo wraca do wariantu z podpisem.
 function optionalHaslo() {
   return process.env.HOTPAY_HASLO?.trim() || null;
 }
@@ -37,8 +39,14 @@ type InitHotpayPaymentInput = {
   returnUrl: string;
 };
 
+// Wariant z hasłem oddaje gotowy link, wariant bez walidacji — pola formularza,
+// które przeglądarka klienta musi sama wysłać POST-em do bramki.
+export type HotpayRedirect =
+  | { url: string }
+  | { form: { action: string; fields: Record<string, string> } };
+
 type InitHotpayPaymentResult =
-  | { ok: true; url: string }
+  | { ok: true; redirect: HotpayRedirect }
   | { ok: false; error: string };
 
 export async function initHotpayPayment(
@@ -49,6 +57,25 @@ export async function initHotpayPayment(
 
   const kwota = (input.amountCents / 100).toFixed(2);
 
+  if (!haslo) {
+    return {
+      ok: true,
+      redirect: {
+        form: {
+          action: HOTPAY_ENDPOINT,
+          fields: {
+            SEKRET: sekret,
+            KWOTA: kwota,
+            NAZWA_USLUGI: input.description,
+            ADRES_WWW: input.returnUrl,
+            ID_ZAMOWIENIA: input.orderNumber,
+            EMAIL: input.email,
+          },
+        },
+      },
+    };
+  }
+
   const body = new FormData();
   body.set("TYP", "INIT");
   body.set("SEKRET", sekret);
@@ -57,14 +84,12 @@ export async function initHotpayPayment(
   body.set("ADRES_WWW", input.returnUrl);
   body.set("ID_ZAMOWIENIA", input.orderNumber);
   body.set("EMAIL", input.email);
-  if (haslo) {
-    body.set(
-      "HASH",
-      sha256(
-        [haslo, kwota, input.description, input.returnUrl, input.orderNumber, sekret].join(";"),
-      ),
-    );
-  }
+  body.set(
+    "HASH",
+    sha256(
+      [haslo, kwota, input.description, input.returnUrl, input.orderNumber, sekret].join(";"),
+    ),
+  );
 
   let response: Response;
   try {
@@ -87,7 +112,7 @@ export async function initHotpayPayment(
     return { ok: false, error: json.WIADOMOSC ?? "Płatność została odrzucona." };
   }
 
-  return { ok: true, url: json.URL };
+  return { ok: true, redirect: { url: json.URL } };
 }
 
 export type HotpayNotification = {

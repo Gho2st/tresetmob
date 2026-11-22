@@ -108,7 +108,26 @@ export default function Kasa() {
       // Zamówienie jest już w bazie (płatność "oczekuje") — koszyk czyścimy
       // przed przejściem do bramki; dalej prowadzi /kasa/potwierdzenie.
       clear();
-      window.location.href = result.redirectUrl;
+      const { redirect } = result;
+      if ("url" in redirect) {
+        window.location.href = redirect.url;
+        return;
+      }
+      // Tymczasowy wariant HotPay bez hasła: bramka przyjmuje tylko POST
+      // z przeglądarki, więc budujemy i wysyłamy niewidoczny formularz.
+      const gateway = document.createElement("form");
+      gateway.method = "post";
+      gateway.action = redirect.form.action;
+      gateway.enctype = "multipart/form-data";
+      for (const [name, value] of Object.entries(redirect.form.fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        gateway.appendChild(input);
+      }
+      document.body.appendChild(gateway);
+      gateway.submit();
     } catch {
       setError("Nie udało się złożyć zamówienia. Spróbuj ponownie.");
       setSubmitting(false);
