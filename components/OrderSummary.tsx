@@ -113,6 +113,10 @@ export default function OrderSummary({
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Kod rabatowy"
+            autoComplete="off"
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
             className="w-full border border-black/20 px-3 py-2 text-sm uppercase placeholder:text-black/30 placeholder:normal-case focus:border-black focus:outline-none"
           />
           <button

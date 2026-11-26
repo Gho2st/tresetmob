@@ -159,6 +159,7 @@ export default function Checkout() {
           </legend>
           <input
             name="email"
+            autoComplete="email"
             type="email"
             required
             placeholder="E-mail"
@@ -166,6 +167,7 @@ export default function Checkout() {
           />
           <input
             name="phone"
+            autoComplete="tel"
             type="tel"
             required
             placeholder="Telefon"
@@ -180,6 +182,7 @@ export default function Checkout() {
           <div className="flex gap-4">
             <input
               name="firstName"
+              autoComplete="given-name"
               type="text"
               required
               placeholder="Imię"
@@ -187,6 +190,7 @@ export default function Checkout() {
             />
             <input
               name="lastName"
+              autoComplete="family-name"
               type="text"
               required
               placeholder="Nazwisko"
@@ -236,6 +240,7 @@ export default function Checkout() {
               <div className="flex gap-4">
                 <input
                   name="building"
+                  autoComplete="off"
                   type="text"
                   required
                   placeholder="Nr domu"
@@ -243,6 +248,7 @@ export default function Checkout() {
                 />
                 <input
                   name="apartment"
+                  autoComplete="off"
                   type="text"
                   placeholder="Nr lokalu (opcjonalnie)"
                   className="w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none"
@@ -251,6 +257,7 @@ export default function Checkout() {
               <div className="flex gap-4">
                 <input
                   name="postalCode"
+                  autoComplete="postal-code"
                   type="text"
                   required
                   placeholder="Kod pocztowy"
@@ -258,6 +265,7 @@ export default function Checkout() {
                 />
                 <input
                   name="city"
+                  autoComplete="address-level2"
                   type="text"
                   required
                   placeholder="Miasto"

@@ -7,3 +7,16 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Safari na iOS przybliża stronę po dotknięciu pola, którego tekst ma mniej
+   niż 16px — a pola formularzy mają u nas text-sm (14px). Reguła jest poza
+   warstwami Tailwinda, więc wygrywa z klasami text-*, i działa tylko na iOS
+   (-webkit-touch-callout), żeby nie zmieniać wyglądu na komputerze i Androidzie.
+   Blokowanie zoomu przez maximum-scale w viewport psułoby dostępność. */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
