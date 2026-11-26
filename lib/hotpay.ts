@@ -105,7 +105,8 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
   const sekret = requireEnv("HOTPAY_SEKRET");
 
   if (fields.SEKRET !== sekret) return false;
-  if (!fields.HASH) return false;
+  // Wariant z walidacją zawsze wysyła SECURE i podpisuje je razem z resztą pól.
+  if (!fields.HASH || !fields.SECURE) return false;
 
   const expected = sha256(
     [
@@ -114,7 +115,7 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
       fields.ID_PLATNOSCI ?? "",
       fields.ID_ZAMOWIENIA ?? "",
       fields.STATUS ?? "",
-      fields.SECURE ?? "",
+      fields.SECURE,
       sekret,
     ].join(";"),
   );
