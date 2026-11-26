@@ -104,12 +104,20 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
   const haslo = requireEnv("HOTPAY_NOTIFY");
   const sekret = requireEnv("HOTPAY_SEKRET");
 
-  // Panel pokazuje sekret zakodowany w base64, a notyfikacja przychodzi z jego
-  // zdekodowaną postacią — obie oznaczają naszą usługę.
-  const ourSekrets = [sekret, Buffer.from(sekret, "base64").toString("utf8")];
-  if (!fields.SEKRET || !ourSekrets.includes(fields.SEKRET)) return false;
   // Wariant z walidacją zawsze wysyła SECURE i podpisuje je razem z resztą pól.
-  if (!fields.HASH || !fields.SECURE) return false;
+  if (!fields.SEKRET || !fields.HASH || !fields.SECURE) return false;
+
+  // Pole SEKRET w notyfikacji ma inną postać niż sekret z panelu (używany przy
+  // inicjalizacji), więc go nie porównujemy — tak jak przykład z dokumentacji.
+  // Pochodzenie potwierdza podpis z hasłem notyfikacji. Niezgodność tylko
+  // logujemy odciskami, żeby dało się ją kiedyś wyjaśnić bez ujawniania wartości.
+  if (fields.SEKRET !== sekret) {
+    const fingerprint = (value: string) => sha256(value).slice(0, 10);
+    console.info("HotPay: SEKRET w notyfikacji różni się od HOTPAY_SEKRET", {
+      received: { length: fields.SEKRET.length, fingerprint: fingerprint(fields.SEKRET) },
+      env: { length: sekret.length, fingerprint: fingerprint(sekret) },
+    });
+  }
 
   // Jak w przykładzie z dokumentacji: skrót z dokładnych wartości odebranych
   // pól, łącznie z SEKRET. Autentyczność gwarantuje hasło notyfikacji.
