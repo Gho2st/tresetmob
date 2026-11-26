@@ -104,10 +104,15 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
   const haslo = requireEnv("HOTPAY_NOTIFY");
   const sekret = requireEnv("HOTPAY_SEKRET");
 
-  if (fields.SEKRET !== sekret) return false;
+  // Panel pokazuje sekret zakodowany w base64, a notyfikacja przychodzi z jego
+  // zdekodowaną postacią — obie oznaczają naszą usługę.
+  const ourSekrets = [sekret, Buffer.from(sekret, "base64").toString("utf8")];
+  if (!fields.SEKRET || !ourSekrets.includes(fields.SEKRET)) return false;
   // Wariant z walidacją zawsze wysyła SECURE i podpisuje je razem z resztą pól.
   if (!fields.HASH || !fields.SECURE) return false;
 
+  // Jak w przykładzie z dokumentacji: skrót z dokładnych wartości odebranych
+  // pól, łącznie z SEKRET. Autentyczność gwarantuje hasło notyfikacji.
   const expected = sha256(
     [
       haslo,
@@ -116,7 +121,7 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
       fields.ID_ZAMOWIENIA ?? "",
       fields.STATUS ?? "",
       fields.SECURE,
-      sekret,
+      fields.SEKRET,
     ].join(";"),
   );
 
@@ -128,33 +133,3 @@ export function verifyHotpayNotification(fields: HotpayNotification): boolean {
   return timingSafeEqual(expectedBuf, receivedBuf);
 }
 
-/**
- * TYMCZASOWA diagnostyka odrzuconych notyfikacji — mówi, czy zgadza się sekret
- * i który wariant skrótu pasuje, bez ujawniania wartości pól ani hasła.
- * Do usunięcia, gdy notyfikacje zaczną przechodzić.
- */
-export function diagnoseHotpayNotification(fields: Record<string, string>) {
-  const haslo = requireEnv("HOTPAY_NOTIFY");
-  const sekret = requireEnv("HOTPAY_SEKRET");
-  const f = (name: string) => fields[name] ?? "";
-  const received = f("HASH").toLowerCase();
-
-  const candidates: Record<string, string[]> = {
-    dokumentacja: [haslo, f("KWOTA"), f("ID_PLATNOSCI"), f("ID_ZAMOWIENIA"), f("STATUS"), f("SECURE"), sekret],
-    bezSecure: [haslo, f("KWOTA"), f("ID_PLATNOSCI"), f("ID_ZAMOWIENIA"), f("STATUS"), sekret],
-    sekretZPola: [haslo, f("KWOTA"), f("ID_PLATNOSCI"), f("ID_ZAMOWIENIA"), f("STATUS"), f("SECURE"), f("SEKRET")],
-    przycieteEnv: [haslo.trim(), f("KWOTA"), f("ID_PLATNOSCI"), f("ID_ZAMOWIENIA"), f("STATUS"), f("SECURE"), sekret.trim()],
-    zamienioneId: [haslo, f("KWOTA"), f("ID_ZAMOWIENIA"), f("ID_PLATNOSCI"), f("STATUS"), f("SECURE"), sekret],
-  };
-
-  return {
-    fieldNames: Object.keys(fields).sort(),
-    sekretMatches: f("SEKRET") === sekret,
-    sekretMatchesTrimmed: f("SEKRET").trim() === sekret.trim(),
-    envHasWhitespace: haslo !== haslo.trim() || sekret !== sekret.trim(),
-    hashLength: received.length,
-    matchingFormula:
-      Object.entries(candidates).find(([, parts]) => sha256(parts.join(";")) === received)?.[0] ??
-      null,
-  };
-}

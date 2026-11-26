@@ -2,7 +2,6 @@ import { NextResponse, after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
-  diagnoseHotpayNotification,
   parseHotpayAmount,
   verifyHotpayNotification,
   type HotpayNotification,
@@ -19,7 +18,6 @@ export async function POST(request: Request) {
       order: fields.ID_ZAMOWIENIA,
       status: fields.STATUS,
       hasSecure: fields.SECURE !== undefined,
-      ...diagnoseHotpayNotification(fields as Record<string, string>),
     });
     return new NextResponse("invalid signature", { status: 400 });
   }
