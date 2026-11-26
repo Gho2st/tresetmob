@@ -11,8 +11,6 @@ export type Discount = {
 const DISCOUNTS: Discount[] = [
   { code: "WITAJ10", label: "-10%", type: "percent", value: 10 },
   { code: "TRESET20", label: "-20 zł", type: "amount", value: 2000 },
-  // Tymczasowy kod do testu płatności produktem za 1 zł — usunąć po teście.
-  { code: "TESTDOSTAWAEF7352", label: "darmowa dostawa", type: "shipping", value: 0 },
 ];
 
 export function findDiscount(code: string): Discount | null {

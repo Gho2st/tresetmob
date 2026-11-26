@@ -11,7 +11,7 @@ export default async function Kasa() {
 
   if (maintenance && !isAdminEmail(session?.user?.email)) {
     return (
-      <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
+      <section className="flex min-h-[calc(100svh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
         <span className="text-xs tracking-[0.3em] text-black/40">KASA</span>
         <h1 className="font-display text-5xl uppercase tracking-tight">
           Prace techniczne

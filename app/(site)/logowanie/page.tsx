@@ -15,7 +15,7 @@ export default async function Logowanie({
   const loginImage = await getLoginImage();
 
   return (
-    <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col bg-white text-black lg:flex-row">
+    <section className="flex min-h-[calc(100svh-3.5rem)] w-full flex-col bg-white text-black lg:flex-row">
       {/* ---------- zdjęcie ---------- */}
       <div className="relative hidden h-64 w-full lg:block lg:h-auto lg:w-1/2">
         <Image

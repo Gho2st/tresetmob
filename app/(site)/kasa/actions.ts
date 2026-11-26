@@ -15,6 +15,7 @@ import { findOrCreateUserId } from "@/lib/users";
 import { isValidNip, normalizeNip } from "@/lib/nip";
 import { isAdminEmail } from "@/lib/admin-credentials";
 import { getShopSettings } from "@/lib/shop-settings";
+import { abandonStaleOrders, abandonSupersededOrder } from "@/lib/orders";
 
 // Z przeglądarki przyjmujemy tylko CO klient kupuje (slug, rozmiar, ilość) i
 // jaki kod wpisał. Ceny, rabat i sumę liczy serwer z bazy — inaczej podmieniony
@@ -43,6 +44,9 @@ type CreateOrderInput = {
   } | null;
   items: OrderLine[];
   discountCode?: string | null;
+  // Nieopłacone zamówienie z poprzedniej próby w tej przeglądarce — po
+  // ponownym złożeniu oznaczamy je jako porzucone, żeby nie dublować zamówień.
+  previousOrderNumber?: string | null;
 };
 
 /** Stałe kody z lib/discounts.ts albo jednorazowy kod z newslettera. */
@@ -62,9 +66,12 @@ export async function checkDiscountCode(code: string) {
 // Next na produkcji zamienia na ogólny komunikat, więc te zwracamy jako wartość.
 class CheckoutError extends Error {}
 
+// Najmniejsza kwota, jaką przyjęła bramka HotPay w testach.
+const MIN_PAYMENT_CENTS = 100;
+
 export async function createOrder(
   input: CreateOrderInput,
-): Promise<{ redirectUrl: string } | { error: string }> {
+): Promise<{ redirectUrl: string; orderNumber: string } | { error: string }> {
   try {
     return await placeOrder(input);
   } catch (error) {
@@ -153,6 +160,11 @@ async function placeOrder(input: CreateOrderInput) {
     : null;
   const discountCents = discount ? Math.round(discountAmount(subtotalCents, discount)) : 0;
   const totalCents = subtotalCents - discountCents + deliveryCost(discount);
+  // Rabat pokrywający całość przy darmowej dostawie dałby 0 zł, a takiej
+  // płatności bramka nie przyjmie — lepiej powiedzieć to klientowi wprost.
+  if (totalCents < MIN_PAYMENT_CENTS) {
+    throw new CheckoutError("Minimalna kwota do zapłaty to 1,00 zł.");
+  }
 
   const number = generateOrderNumber();
 
@@ -175,6 +187,11 @@ async function placeOrder(input: CreateOrderInput) {
   const userId = session?.user?.email
     ? await findOrCreateUserId(session.user.email, session.user.name)
     : null;
+
+  if (input.previousOrderNumber) {
+    await abandonSupersededOrder(input.previousOrderNumber, input.email);
+  }
+  await abandonStaleOrders();
 
   // Potwierdzenie mailowe wysyła webhook HotPay po zaksięgowaniu płatności.
   await prisma.order.create({
@@ -210,5 +227,5 @@ async function placeOrder(input: CreateOrderInput) {
     after(() => subscribe(input.email, "kasa"));
   }
 
-  return { redirectUrl: init.url };
+  return { redirectUrl: init.url, orderNumber: number };
 }

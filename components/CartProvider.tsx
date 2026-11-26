@@ -12,6 +12,8 @@ import type { CartItem } from "@/lib/cart";
 
 const STORAGE_KEY = "tresetmob-cart";
 const DISCOUNT_STORAGE_KEY = "tresetmob-discount";
+// Numer nieopłaconego zamówienia z ostatniej próby płatności (patrz kasa).
+export const PENDING_ORDER_STORAGE_KEY = "tresetmob-pending-order";
 
 type CartContextValue = {
   items: CartItem[];
@@ -97,6 +99,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clear = () => {
     setItems([]);
     setDiscountCode(null);
+    // Od razu też z localStorage: strona potwierdzenia płatności czyści koszyk
+    // w efekcie, który rusza przed wczytaniem koszyka przez ten provider — bez
+    // tego wczytanie przywróciłoby właśnie opłacone produkty.
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+      window.localStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+    } catch {
+      // ignore unavailable storage
+    }
   };
 
   const count = useMemo(

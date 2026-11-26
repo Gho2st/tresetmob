@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { abandonStaleOrders } from "@/lib/orders";
 import { ORDER_STATUSES } from "@/lib/order-status";
 import { compareSizes } from "@/lib/sizes";
 
@@ -201,6 +202,7 @@ async function accountStats(from: Date | null, previousFrom: Date | null) {
 }
 
 export async function getDashboardStats(period: PeriodKey) {
+  await abandonStaleOrders();
   const now = new Date();
   const { days } = PERIODS[period];
   const from = days ? new Date(now.getTime() - days * DAY) : null;

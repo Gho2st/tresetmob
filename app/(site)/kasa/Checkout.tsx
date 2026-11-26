@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CreditCard, Landmark, Lock, Smartphone } from "lucide-react";
-import { useCart } from "@/components/CartProvider";
+import { PENDING_ORDER_STORAGE_KEY, useCart } from "@/components/CartProvider";
 import {
   formatInPostPoint,
   type InPostPoint,
@@ -27,8 +27,26 @@ const PAYMENT_METHODS = [
 const INPUT =
   "w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none";
 
+// Pamięć przeglądarki bywa niedostępna (tryb prywatny) — wtedy po prostu nie
+// porzucamy poprzedniej próby od razu; zrobi to i tak limit godziny.
+function readPendingOrder() {
+  try {
+    return window.localStorage.getItem(PENDING_ORDER_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writePendingOrder(number: string) {
+  try {
+    window.localStorage.setItem(PENDING_ORDER_STORAGE_KEY, number);
+  } catch {
+    // ignore unavailable storage
+  }
+}
+
 export default function Checkout() {
-  const { items, subtotal, clear, discountCode } = useCart();
+  const { items, subtotal, discountCode } = useCart();
   const formRef = useRef<HTMLFormElement>(null);
   const [delivery, setDelivery] =
     useState<(typeof DELIVERY_METHODS)[number]["id"]>("kurier");
@@ -40,6 +58,17 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [termsMissing, setTermsMissing] = useState(false);
+
+  // Powrót strzałką z bramki potrafi przywrócić stronę z pamięci przeglądarki
+  // (bfcache) razem ze stanem "Składanie zamówienia..." — odblokowujemy przycisk,
+  // żeby klient mógł od razu spróbować jeszcze raz.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setSubmitting(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +125,7 @@ export default function Checkout() {
         company,
         items: items.map(({ slug, size, quantity }) => ({ slug, size, quantity })),
         discountCode,
+        previousOrderNumber: readPendingOrder(),
       });
 
       if ("error" in result) {
@@ -104,9 +134,10 @@ export default function Checkout() {
         return;
       }
 
-      // Zamówienie jest już w bazie (płatność "oczekuje") — koszyk czyścimy
-      // przed przejściem do bramki; dalej prowadzi /kasa/potwierdzenie.
-      clear();
+      // Zamówienie jest już w bazie (płatność "oczekuje"), ale koszyka nie
+      // czyścimy — klient może wrócić z bramki bez płacenia i spróbować jeszcze
+      // raz. Czyści go /kasa/potwierdzenie, gdy płatność się zaksięguje.
+      writePendingOrder(result.orderNumber);
       window.location.href = result.redirectUrl;
     } catch {
       setError("Nie udało się złożyć zamówienia. Spróbuj ponownie.");
@@ -114,11 +145,9 @@ export default function Checkout() {
     }
   };
 
-  // !submitting: po udanym złożeniu koszyk jest już pusty, a przeglądarka jeszcze
-  // przechodzi do bramki — bez tego mignąłby ekran "Koszyk jest pusty".
   if (items.length === 0 && !submitting) {
     return (
-      <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
+      <section className="flex min-h-[calc(100svh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 text-center text-black">
         <span className="text-xs tracking-[0.3em] text-black/40">KASA</span>
         <h1 className="font-display text-5xl uppercase tracking-tight">
           Koszyk jest pusty

@@ -1,6 +1,7 @@
 // Jedno źródło danych kontaktowych sklepu — używane w regulaminie, zwrotach itd.
 
-export const SITE_URL = "https://tresetmob.com";
+// Adres docelowy — wersja bez www przekierowuje tutaj (308).
+export const SITE_URL = "https://www.tresetmob.com";
 
 export const SELLER = {
   name: "Kamil Jurczak",

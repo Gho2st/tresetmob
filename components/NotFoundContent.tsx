@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFoundContent() {
   return (
-    <section className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 py-24 text-center text-black">
+    <section className="flex min-h-[calc(100svh-3.5rem)] w-full flex-col items-center justify-center gap-6 bg-white px-6 py-24 text-center text-black">
       <p
         aria-hidden="true"
         className="font-display text-[9rem] leading-none tracking-tight sm:text-[12rem]"

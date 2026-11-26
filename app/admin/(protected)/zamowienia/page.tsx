@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { getAllOrders } from "@/lib/orders";
 import { formatPrice } from "@/lib/cart";
 import OrderStatusSelect from "./OrderStatusSelect";
@@ -8,19 +9,60 @@ const PAYMENT_BADGE: Record<string, { label: string; className: string }> = {
   oplacone: { label: "Opłacone", className: "border-emerald-700/40 bg-emerald-50 text-emerald-800" },
   oczekuje: { label: "Oczekuje na płatność", className: "border-amber-600/40 bg-amber-50 text-amber-800" },
   nieudane: { label: "Płatność nieudana", className: "border-red-700/40 bg-red-50 text-red-800" },
+  porzucone: { label: "Porzucone", className: "border-black/15 bg-black/5 text-black/50" },
 };
 
-export default async function AdminZamowienia() {
-  const orders = await getAllOrders();
+// Domyślnie widać to, czym trzeba się zająć — opłacone. Porzucone i nieudane
+// próby płatności leżą w osobnej zakładce, jak w WooCommerce czy Shopify.
+const TABS = [
+  { key: "oplacone", label: "Opłacone", statuses: ["oplacone"] },
+  { key: "oczekuje", label: "Oczekujące", statuses: ["oczekuje"] },
+  { key: "porzucone", label: "Porzucone i nieudane", statuses: ["porzucone", "nieudane"] },
+  { key: "wszystkie", label: "Wszystkie", statuses: null },
+] as const;
+
+type Props = { searchParams: Promise<{ platnosc?: string }> };
+
+export default async function AdminZamowienia({ searchParams }: Props) {
+  const { platnosc } = await searchParams;
+  const allOrders = await getAllOrders();
+  const tab = TABS.find((t) => t.key === platnosc) ?? TABS[0];
+
+  const inTab = (t: (typeof TABS)[number]) =>
+    t.statuses === null
+      ? allOrders
+      : allOrders.filter((o) => (t.statuses as readonly string[]).includes(o.paymentStatus));
+  const orders = inTab(tab);
 
   return (
     <div className="flex flex-col gap-8">
-      <AdminPageHeader title="Zamówienia">
-        <span className="text-sm text-black/40">{orders.length} zamówień</span>
-      </AdminPageHeader>
+      <AdminPageHeader title="Zamówienia" />
+
+      <nav aria-label="Status płatności" className="-mt-2 flex flex-wrap gap-2">
+        {TABS.map((t) => {
+          const active = t.key === tab.key;
+          return (
+            <Link
+              key={t.key}
+              href={t.key === TABS[0].key ? "/admin/zamowienia" : `/admin/zamowienia?platnosc=${t.key}`}
+              aria-current={active ? "page" : undefined}
+              className={`flex items-center gap-2 border px-3 py-1.5 text-xs tracking-widest uppercase transition-colors ${
+                active
+                  ? "border-black bg-black text-white"
+                  : "border-black/15 text-black/60 hover:border-black hover:text-black"
+              }`}
+            >
+              {t.label}
+              <span className={active ? "text-white/60" : "text-black/35"}>
+                {inTab(t).length}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {orders.length === 0 ? (
-        <p className="text-sm text-black/50">Brak zamówień.</p>
+        <p className="text-sm text-black/50">Brak zamówień w tej zakładce.</p>
       ) : (
         <ul className="flex flex-col divide-y divide-black/10 border-y border-black/10">
           {orders.map((order) => (

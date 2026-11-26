@@ -6,7 +6,7 @@ export default async function Hero() {
   const heroMedia = await getHeroMedia();
 
   return (
-    <div className="w-full h-screen relative">
+    <div className="relative h-svh w-full">
       {heroMedia.type === "video" ? (
         <video
           src={heroMedia.src}
