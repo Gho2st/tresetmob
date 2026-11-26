@@ -12,7 +12,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   }
 
   return (
-    <div className="grid sm:grid-cols-2 justify-items-center gap-x-4 gap-y-10 md:grid-cols-3 2xl:grid-cols-4  2xl:gap-x-8 2xl:gap-y-16">
+    <div className="grid grid-cols-2 justify-items-center gap-x-3 gap-y-8 sm:gap-x-4 sm:gap-y-10 md:grid-cols-3 2xl:grid-cols-4 2xl:gap-x-8 2xl:gap-y-16">
       {products.map((product) => (
         <Item
           key={product.slug}

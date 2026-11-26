@@ -40,10 +40,12 @@ export default async function ProductPage({ params }: Params) {
     : null;
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-2">
+    // Na telefonie galeria idzie od krawędzi do krawędzi (jak w dużych sklepach
+    // odzieżowych), a padding ma dopiero kolumna z opisem.
+    <main className="mx-auto grid max-w-6xl gap-6 pb-12 md:grid-cols-2 md:gap-10 md:px-6 md:py-12">
       <Gallery images={productImages(product)} title={product.title} />
 
-      <div className="md:sticky md:top-8 md:h-fit md:pt-8">
+      <div className="px-6 md:sticky md:top-8 md:h-fit md:px-0 md:pt-8">
         <h1 className="font-display text-4xl uppercase tracking-tight sm:text-5xl">
           {product.title}
         </h1>

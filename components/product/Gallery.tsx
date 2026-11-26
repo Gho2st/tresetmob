@@ -109,7 +109,7 @@ export default function Gallery({ images, title }: Props) {
               type="button"
               key={image.url}
               onClick={() => open(i)}
-              className="relative aspect-square w-full flex-none snap-start"
+              className="relative aspect-3/4 w-full flex-none snap-start"
               aria-label={`Powiększ zdjęcie ${i + 1}`}
             >
               <Image

@@ -279,7 +279,7 @@ export default function Checkout() {
                   name="apartment"
                   autoComplete="off"
                   type="text"
-                  placeholder="Nr lokalu (opcjonalnie)"
+                  placeholder="Nr lokalu"
                   className="w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none"
                 />
               </div>
@@ -370,7 +370,7 @@ export default function Checkout() {
                     <input
                       name="companyApartment"
                       type="text"
-                      placeholder="Nr lokalu (opcjonalnie)"
+                      placeholder="Nr lokalu"
                       className={INPUT}
                     />
                   </div>

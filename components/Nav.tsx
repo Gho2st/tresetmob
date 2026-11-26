@@ -10,8 +10,16 @@ import { useCart } from "@/components/CartProvider";
 import HoverMenu from "@/components/HoverMenu";
 import CartPreview from "@/components/CartPreview";
 import AccountPreview from "@/components/AccountPreview";
+import { SOCIAL_LINKS } from "@/lib/social";
 
 const LINKS = [{ label: "Sklep", href: "/sklep" }];
+
+// Tylko w menu mobilnym — na komputerze te strony są w stopce na wyciągnięcie ręki.
+const MOBILE_INFO_LINKS = [
+  { label: "Centrum pomocy", href: "/centrum-pomocy" },
+  { label: "Zwroty i wymiany", href: "/zwroty" },
+  { label: "Regulamin", href: "/regulamin" },
+];
 
 const iconBtn =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-black " +
@@ -313,7 +321,33 @@ export default function Nav() {
           })}
         </div>
 
-        <div className="mt-auto flex flex-col gap-1 px-4 pt-8 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        <div className="flex flex-col gap-1 px-4 pt-8">
+          {MOBILE_INFO_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={navigate(link.href)}
+              className="-mx-2 rounded px-2 py-2.5 text-sm text-black/60 transition-colors active:bg-black/5"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="mt-3 flex gap-5 text-xs tracking-widest text-black/40 uppercase">
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.id}
+                href={social.href}
+                target="_blank"
+                rel="noreferrer"
+                className="py-2 transition-colors active:text-black"
+              >
+                {social.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-auto flex flex-col gap-1 border-t border-black/5 px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <Link
             href={loggedIn ? "/konto" : "/logowanie"}
             onClick={navigate(loggedIn ? "/konto" : "/logowanie")}
