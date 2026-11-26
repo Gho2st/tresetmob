@@ -16,13 +16,12 @@ function requireEnv(name: string) {
   return value;
 }
 
-// Hasło z ustawień punktu płatności podpisuje zapytania i notyfikacje. Na razie
-// go nie mamy, więc jest opcjonalne — bez niego płatność idzie wariantem
-// "API bez walidacji" (formularz z przeglądarki), a notyfikację weryfikuje tylko
-// SEKRET plus zgodność kwoty z zamówieniem (webhook). TYMCZASOWE — po dodaniu
-// HOTPAY_HASLO wszystko samo wraca do wariantu z podpisem.
+// "Hasło notyfikacji" z ustawień usługi w panelu HotPay (HOTPAY_NOTIFY) podpisuje
+// zapytania i notyfikacje. Bez niego płatność idzie wariantem "API bez walidacji"
+// (formularz z przeglądarki), a notyfikację weryfikuje tylko SEKRET plus zgodność
+// kwoty z zamówieniem — awaryjny tryb na czas, gdy hasła nie ma.
 function optionalHaslo() {
-  return process.env.HOTPAY_HASLO?.trim() || null;
+  return process.env.HOTPAY_NOTIFY?.trim() || null;
 }
 
 export function siteUrl() {
