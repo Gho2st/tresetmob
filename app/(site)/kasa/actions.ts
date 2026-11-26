@@ -9,7 +9,7 @@ import {
 } from "@/lib/discounts";
 import { findNewsletterDiscount, subscribe } from "@/lib/newsletter";
 import { after } from "next/server";
-import { initHotpayPayment, siteUrl, type HotpayRedirect } from "@/lib/hotpay";
+import { initHotpayPayment, siteUrl } from "@/lib/hotpay";
 import { auth } from "@/auth";
 import { findOrCreateUserId } from "@/lib/users";
 import { isValidNip, normalizeNip } from "@/lib/nip";
@@ -64,7 +64,7 @@ class CheckoutError extends Error {}
 
 export async function createOrder(
   input: CreateOrderInput,
-): Promise<{ redirect: HotpayRedirect } | { error: string }> {
+): Promise<{ redirectUrl: string } | { error: string }> {
   try {
     return await placeOrder(input);
   } catch (error) {
@@ -210,5 +210,5 @@ async function placeOrder(input: CreateOrderInput) {
     after(() => subscribe(input.email, "kasa"));
   }
 
-  return { redirect: init.redirect };
+  return { redirectUrl: init.url };
 }

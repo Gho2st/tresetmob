@@ -11,6 +11,7 @@ import {
 import type { CartItem } from "@/lib/cart";
 
 const STORAGE_KEY = "tresetmob-cart";
+const DISCOUNT_STORAGE_KEY = "tresetmob-discount";
 
 type CartContextValue = {
   items: CartItem[];
@@ -18,6 +19,10 @@ type CartContextValue = {
   removeItem: (slug: string, size: string) => void;
   updateQuantity: (slug: string, size: string, quantity: number) => void;
   clear: () => void;
+  // Sam kod wpisany w koszyku — kasa sprawdza go jeszcze raz na serwerze, bo
+  // jednorazowy kod z newslettera mógł się w międzyczasie zużyć.
+  discountCode: string | null;
+  setDiscountCode: (code: string | null) => void;
   count: number;
   subtotal: number;
 };
@@ -26,6 +31,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -35,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const stored = window.localStorage.getItem(STORAGE_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored) setItems(JSON.parse(stored));
+      setDiscountCode(window.localStorage.getItem(DISCOUNT_STORAGE_KEY));
     } catch {
       // ignore malformed/unavailable storage
     }
@@ -45,6 +52,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (discountCode) window.localStorage.setItem(DISCOUNT_STORAGE_KEY, discountCode);
+    else window.localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+  }, [discountCode, hydrated]);
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
     setItems((prev) => {
@@ -81,7 +94,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const clear = () => setItems([]);
+  const clear = () => {
+    setItems([]);
+    setDiscountCode(null);
+  };
 
   const count = useMemo(
     () => items.reduce((sum, i) => sum + i.quantity, 0),
@@ -101,6 +117,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         updateQuantity,
         clear,
+        discountCode,
+        setDiscountCode,
         count,
         subtotal,
       }}

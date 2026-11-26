@@ -28,12 +28,11 @@ const INPUT =
   "w-full border border-black/20 px-4 py-3 text-sm placeholder:text-black/30 focus:border-black focus:outline-none";
 
 export default function Checkout() {
-  const { items, subtotal, clear } = useCart();
+  const { items, subtotal, clear, discountCode } = useCart();
   const formRef = useRef<HTMLFormElement>(null);
   const [delivery, setDelivery] =
     useState<(typeof DELIVERY_METHODS)[number]["id"]>("kurier");
   const [point, setPoint] = useState<InPostPoint | null>(null);
-  const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [isCompany, setIsCompany] = useState(false);
   // Przy kurierze adres firmy zwykle pokrywa się z adresem dostawy, więc
   // domyślnie go kopiujemy; przy paczkomacie adresu dostawy nie ma.
@@ -108,26 +107,7 @@ export default function Checkout() {
       // Zamówienie jest już w bazie (płatność "oczekuje") — koszyk czyścimy
       // przed przejściem do bramki; dalej prowadzi /kasa/potwierdzenie.
       clear();
-      const { redirect } = result;
-      if ("url" in redirect) {
-        window.location.href = redirect.url;
-        return;
-      }
-      // Tymczasowy wariant HotPay bez hasła: bramka przyjmuje tylko POST
-      // z przeglądarki, więc budujemy i wysyłamy niewidoczny formularz.
-      const gateway = document.createElement("form");
-      gateway.method = "post";
-      gateway.action = redirect.form.action;
-      gateway.enctype = "multipart/form-data";
-      for (const [name, value] of Object.entries(redirect.form.fields)) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        gateway.appendChild(input);
-      }
-      document.body.appendChild(gateway);
-      gateway.submit();
+      window.location.href = result.redirectUrl;
     } catch {
       setError("Nie udało się złożyć zamówienia. Spróbuj ponownie.");
       setSubmitting(false);
@@ -466,7 +446,6 @@ export default function Checkout() {
         <OrderSummary
           subtotal={subtotal}
           items={items}
-          onDiscountChange={setDiscountCode}
         >
           <button
             type="submit"

@@ -16,14 +16,6 @@ function requireEnv(name: string) {
   return value;
 }
 
-// "Hasło notyfikacji" z ustawień usługi w panelu HotPay (HOTPAY_NOTIFY) podpisuje
-// zapytania i notyfikacje. Bez niego płatność idzie wariantem "API bez walidacji"
-// (formularz z przeglądarki), a notyfikację weryfikuje tylko SEKRET plus zgodność
-// kwoty z zamówieniem — awaryjny tryb na czas, gdy hasła nie ma.
-function optionalHaslo() {
-  return process.env.HOTPAY_NOTIFY?.trim() || null;
-}
-
 export function siteUrl() {
   if (process.env.SITE_URL) return process.env.SITE_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
@@ -38,42 +30,19 @@ type InitHotpayPaymentInput = {
   returnUrl: string;
 };
 
-// Wariant z hasłem oddaje gotowy link, wariant bez walidacji — pola formularza,
-// które przeglądarka klienta musi sama wysłać POST-em do bramki.
-export type HotpayRedirect =
-  | { url: string }
-  | { form: { action: string; fields: Record<string, string> } };
-
 type InitHotpayPaymentResult =
-  | { ok: true; redirect: HotpayRedirect }
+  | { ok: true; url: string }
   | { ok: false; error: string };
 
 export async function initHotpayPayment(
   input: InitHotpayPaymentInput,
 ): Promise<InitHotpayPaymentResult> {
   const sekret = requireEnv("HOTPAY_SEKRET");
-  const haslo = optionalHaslo();
+  // "Hasło notyfikacji" z ustawień usługi w panelu HotPay — podpisuje zarówno
+  // inicjalizację płatności, jak i notyfikacje.
+  const haslo = requireEnv("HOTPAY_NOTIFY");
 
   const kwota = (input.amountCents / 100).toFixed(2);
-
-  if (!haslo) {
-    return {
-      ok: true,
-      redirect: {
-        form: {
-          action: HOTPAY_ENDPOINT,
-          fields: {
-            SEKRET: sekret,
-            KWOTA: kwota,
-            NAZWA_USLUGI: input.description,
-            ADRES_WWW: input.returnUrl,
-            ID_ZAMOWIENIA: input.orderNumber,
-            EMAIL: input.email,
-          },
-        },
-      },
-    };
-  }
 
   const body = new FormData();
   body.set("TYP", "INIT");
@@ -111,7 +80,7 @@ export async function initHotpayPayment(
     return { ok: false, error: json.WIADOMOSC ?? "Płatność została odrzucona." };
   }
 
-  return { ok: true, redirect: { url: json.URL } };
+  return { ok: true, url: json.URL };
 }
 
 export type HotpayNotification = {
@@ -124,12 +93,18 @@ export type HotpayNotification = {
   HASH?: string;
 };
 
+/** "1", "1.0", "1.00" → 100. Bez floatów, jak zaleca dokumentacja HotPay. */
+export function parseHotpayAmount(raw: string | undefined): number | null {
+  const match = /^(\d+)(?:[.,](\d{1,2}))?$/.exec((raw ?? "").trim());
+  if (!match) return null;
+  return Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
+}
+
 export function verifyHotpayNotification(fields: HotpayNotification): boolean {
-  const haslo = optionalHaslo();
+  const haslo = requireEnv("HOTPAY_NOTIFY");
   const sekret = requireEnv("HOTPAY_SEKRET");
 
   if (fields.SEKRET !== sekret) return false;
-  if (!haslo) return true;
   if (!fields.HASH) return false;
 
   const expected = sha256(

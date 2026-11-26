@@ -1,7 +1,11 @@
 import { NextResponse, after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { verifyHotpayNotification, type HotpayNotification } from "@/lib/hotpay";
+import {
+  parseHotpayAmount,
+  verifyHotpayNotification,
+  type HotpayNotification,
+} from "@/lib/hotpay";
 import { sendOrderConfirmationEmail } from "@/lib/mail";
 import { markNewsletterCodeUsed } from "@/lib/newsletter";
 
@@ -10,6 +14,11 @@ export async function POST(request: Request) {
   const fields = Object.fromEntries(formData.entries()) as HotpayNotification;
 
   if (!verifyHotpayNotification(fields)) {
+    console.warn("HotPay: odrzucona notyfikacja (sekret/podpis)", {
+      order: fields.ID_ZAMOWIENIA,
+      status: fields.STATUS,
+      hasSecure: fields.SECURE !== undefined,
+    });
     return new NextResponse("invalid signature", { status: 400 });
   }
 
@@ -18,13 +27,19 @@ export async function POST(request: Request) {
     include: { items: true },
   });
   if (!order) {
+    console.warn("HotPay: notyfikacja dla nieznanego zamówienia", fields.ID_ZAMOWIENIA);
     return new NextResponse("order not found", { status: 404 });
   }
 
-  // Bez hasła HotPay (patrz lib/hotpay.ts) to jedyna kontrola poza SEKRETEM:
-  // notyfikacja musi dotyczyć dokładnie tej kwoty, na którą wystawiliśmy płatność.
-  const paidCents = Math.round(Number.parseFloat(fields.KWOTA ?? "") * 100);
+  // Podpis potwierdza, że notyfikacja przyszła z HotPay — a to, że dotyczy
+  // dokładnie tej kwoty, na którą wystawiliśmy płatność.
+  const paidCents = parseHotpayAmount(fields.KWOTA);
   if (fields.STATUS === "SUCCESS" && paidCents !== order.totalCents) {
+    console.warn("HotPay: niezgodna kwota", {
+      order: order.number,
+      received: fields.KWOTA,
+      expectedCents: order.totalCents,
+    });
     return new NextResponse("amount mismatch", { status: 400 });
   }
 

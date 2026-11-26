@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { formatPrice, type CartItem } from "@/lib/cart";
 import {
@@ -9,21 +9,23 @@ import {
   type Discount,
 } from "@/lib/discounts";
 import { checkDiscountCode } from "@/app/(site)/kasa/actions";
+import { useCart } from "@/components/CartProvider";
 
 type OrderSummaryProps = {
   subtotal: number;
   items?: CartItem[];
-  // Tylko kod — kwotę rabatu i sumę i tak przelicza serwer przy składaniu zamówienia.
-  onDiscountChange?: (code: string | null) => void;
   children: ReactNode;
 };
 
 export default function OrderSummary({
   subtotal,
   items,
-  onDiscountChange,
   children,
 }: OrderSummaryProps) {
+  // Kod żyje w koszyku (CartProvider), więc przechodzi z /koszyk do /kasa.
+  // Tu trzymamy tylko jego sprawdzoną wersję — kwotę rabatu i sumę i tak
+  // przelicza serwer przy składaniu zamówienia.
+  const { discountCode, setDiscountCode } = useCart();
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<Discount | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +34,24 @@ export default function OrderSummary({
   const discount = applied ? Math.round(calcDiscountAmount(subtotal, applied)) : 0;
   const delivery = deliveryCost(applied);
   const total = Math.max(subtotal - discount, 0) + delivery;
+
+  // Kod zapamiętany w koszyku sprawdzamy ponownie po wejściu na stronę —
+  // jednorazowy kod z newslettera mógł się w międzyczasie zużyć.
+  useEffect(() => {
+    if (!discountCode || applied?.code === discountCode) return;
+    let active = true;
+    checkDiscountCode(discountCode)
+      .catch(() => null)
+      .then((found) => {
+        if (!active) return;
+        setApplied(found);
+        if (found) setCode(found.code);
+        else setDiscountCode(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [discountCode, applied?.code, setDiscountCode]);
 
   // Kody z newslettera są jednorazowe i leżą w bazie, więc pytamy serwer.
   const handleApply = async (e: React.FormEvent) => {
@@ -42,12 +62,12 @@ export default function OrderSummary({
     if (!found) {
       setApplied(null);
       setError("Nieprawidłowy kod rabatowy");
-      onDiscountChange?.(null);
+      setDiscountCode(null);
       return;
     }
     setApplied(found);
     setError(null);
-    onDiscountChange?.(found.code);
+    setDiscountCode(found.code);
   };
 
   return (
