@@ -13,8 +13,9 @@ type ItemProps = {
   soldOut?: boolean;
 };
 
+// Telefon: jedna kolumna na całą szerokość, od sm: dwie, od md: trzy.
 const SIZES =
-  "(max-width: 639px) 45vw, (max-width: 1279px) 30vw, (max-width: 1535px) 22vw, 28vw";
+  "(max-width: 639px) 92vw, (max-width: 767px) 45vw, (max-width: 1279px) 30vw, (max-width: 1535px) 22vw, 28vw";
 
 export default function Item({
   images,
@@ -55,21 +56,21 @@ export default function Item({
           <span className="absolute inset-0 flex items-center justify-center">
             {/* prawy padding mniejszy o tracking — inaczej odstęp za ostatnią literą
                 przesuwa tekst w lewo względem ramki */}
-            <span className="border border-black py-1.5 pl-3 pr-[calc(0.75rem-0.35em)] text-xs font-medium tracking-[0.35em] text-black uppercase sm:py-2 sm:pl-5 sm:pr-[calc(1.25rem-0.35em)] sm:text-sm">
+            <span className="border border-black py-2 pl-5 pr-[calc(1.25rem-0.35em)] text-sm font-medium tracking-[0.35em] text-black uppercase">
               Sold out
             </span>
           </span>
         )}
       </div>
-      <div className={`mt-3 text-center sm:mt-4 ${dimmed}`}>
-        <h3 className="text-xs font-semibold tracking-wide uppercase group-hover:underline sm:text-sm">
+      <div className={`mt-4 text-center ${dimmed}`}>
+        <h3 className="text-sm font-semibold tracking-wide uppercase group-hover:underline">
           {title}
         </h3>
         <PriceTag
           priceCents={priceCents}
           salePriceCents={salePriceCents}
           lowestPriceCents={lowestPriceCents}
-          className="mt-2 block text-xs sm:mt-3 sm:text-sm"
+          className="mt-3 block text-sm"
         />
       </div>
     </Link>
