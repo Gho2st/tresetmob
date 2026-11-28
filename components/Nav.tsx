@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -36,6 +36,8 @@ export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -69,12 +71,30 @@ export default function Nav() {
     };
   }, [menuOpen, router]);
 
+  // Pasek chowa się przy przewijaniu w dół i wraca przy każdym ruchu w górę.
+  // Drobne drgnięcia (np. odbicie przewijania na iOS) ignorujemy progiem,
+  // a przy samej górze strony pasek jest zawsze widoczny.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
+    const onScroll = () => {
+      const y = Math.max(0, window.scrollY);
+      setScrolled(y > 4);
+      const delta = y - lastScrollY.current;
+      if (Math.abs(delta) < 8) return;
+      setHidden(delta > 0 && y > 56);
+      lastScrollY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Po dodaniu produktu do koszyka pokazujemy pasek, żeby było widać licznik.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHidden(false);
+  }, [count]);
+
+  const navHidden = hidden && !menuOpen && !searchOpen;
 
   const closeAll = () => {
     setMenuOpen(false);
@@ -115,9 +135,9 @@ export default function Nav() {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-white transition-shadow duration-200 ${
+      className={`sticky top-0 z-50 bg-white transition-[transform,box-shadow] duration-300 ${
         scrolled ? "shadow-[0_1px_12px_rgba(0,0,0,0.07)]" : ""
-      }`}
+      } ${navHidden ? "-translate-y-full" : "translate-y-0"}`}
       aria-busy={isPending}
     >
       <nav className="relative flex h-14 w-full items-center justify-between border-b border-black/10 px-2 text-black md:px-8">
